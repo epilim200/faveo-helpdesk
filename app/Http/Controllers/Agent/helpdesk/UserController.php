@@ -693,7 +693,7 @@ class UserController extends Controller
                 }
             }
             $users->mobile = ($request->input('mobile') == '') ? null : $request->input('mobile');
-            $users->fill($request->except('mobile', 'active', 'role', 'is_delete', 'ban'));
+            $users->fill($request->except('mobile', 'role', 'is_delete', 'ban'));
             $users->save();
             if ($request->input('org_id') != '') {
                 $orgid = $request->input('org_id');
