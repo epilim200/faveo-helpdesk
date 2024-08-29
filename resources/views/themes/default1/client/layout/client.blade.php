@@ -114,6 +114,7 @@
                             <?php
                             $company = App\Model\helpdesk\Settings\Company::where('id', '=', '1')->first();
                             $system = App\Model\helpdesk\Settings\System::where('id', '=', '1')->first();
+                            $kb = App\Model\helpdesk\Settings\CommonSettings::where('option_name', '=', 'knowledge_base')->first();
                             ?>
                             @if($system->url)
                             <a href="{!! $system->url !!}" rel="home">
