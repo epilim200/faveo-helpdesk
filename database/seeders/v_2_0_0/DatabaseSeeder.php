@@ -2041,6 +2041,7 @@ class DatabaseSeeder extends Seeder
         CommonSettings::create(['option_name' => 'send_otp', 'status' => 0]);
         CommonSettings::create(['option_name' => 'email_mandatory', 'status' => 1]);
         CommonSettings::create(['option_name' => 'user_priority', 'status' => 0]);
+        CommonSettings::create(['option_name' => 'disabled_knowledge_base', 'status' => 0]);
 
         /*
          * Ratings

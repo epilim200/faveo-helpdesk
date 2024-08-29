@@ -180,8 +180,22 @@ class="nav-link active"
                     </div>
                 </div>
             </div>
-            
-            
+        </div>
+        <div class="row">
+            <div class="col-md-4">
+                <div class="form-group">
+                    {!! Form::label('knowledge_base',Lang::get('lang.knowledge_base')) !!}
+                    <div class="row">
+                        <?php $kb = App\Model\helpdesk\Settings\CommonSettings::where('option_name', '=', 'knowledge_base')->first(); ?>
+                        <div class="col-sm-5">
+                            <input type="radio" name="knowledge_base" value="0" @if($kb->status == '0')checked="true" @endif>&nbsp;{{Lang::get('lang.disabled')}}
+                        </div>
+                        <div class="col-sm-6">
+                            <input type="radio" name="knowledge_base" value="1" @if($kb->status == '1')checked="true" @endif>&nbsp;{{Lang::get('lang.enable')}}
+                        </div>
+                    </div>
+                </div>
+            </div>
         </div>
     </div>
     <div class="card-footer">
