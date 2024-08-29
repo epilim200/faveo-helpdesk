@@ -6,6 +6,7 @@ namespace App\Http\Controllers\Client\helpdesk;
 use App\Http\Controllers\Controller;
 // models
 use App\Model\helpdesk\Settings\System;
+use App\Model\helpdesk\Settings\CommonSettings;
 // classes
 use Config;
 use Redirect;
@@ -43,8 +44,9 @@ class WelcomepageController extends Controller
     public function index()
     {
         $directory = base_path();
+        $kb = CommonSettings::where('option_name', '=', 'knowledge_base')->first();
         if (file_exists($directory.DIRECTORY_SEPARATOR.'.env')) {
-            return view('themes.default1.client.helpdesk.guest-user.index');
+            return view('themes.default1.client.helpdesk.guest-user.index', compact('kb'));
         } else {
             return Redirect::route('licence');
         }

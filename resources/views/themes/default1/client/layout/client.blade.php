@@ -149,7 +149,7 @@
                                     <a href="{{URL::route('form')}}" class="nav-link">{!! Lang::get('lang.submit_a_ticket') !!}</a>
                                 </li>
                                 @endif
-
+                                @if($kb->status == 1)
                                 <li @yield('kb') class="nav-item dropdown">
                                     <a href="{!! url('knowledgebase') !!}" class="dropdown-toggle nav-link"  id="navbarDropdown" role="button" data-toggle=""
                                         aria-haspopup="true" aria-expanded="false">{!! Lang::get('lang.knowledge_base') !!}
@@ -159,7 +159,7 @@
                                         <li><a href="{{route('article-list')}}" class="dropdown-item">{!! Lang::get('lang.articles') !!}</a></li>
                                     </ul>
                                 </li>
-
+                                @endif
                                  <?php
                                     if(!Auth::check() || Auth::user()->role == 'user')
                                  $pages = App\Model\kb\Page::where('status', '1')->where('visibility', '1')->get();
@@ -313,7 +313,7 @@
                             </div><!-- #login-form -->
                         </div>
                     </nav>
-
+                    @if($kb->status == 1)
                     <div id="header-search" class="site-search clearfix" style="margin-right: 90%; width: 100%"><!-- #header-search -->
                         {!!Form::open(['route' => 'client.search','class'=>'search-form clearfix'])!!}
                         <div class="form-border" style="z-index: 0;width: 85%;">
@@ -334,6 +334,7 @@
                         </div>
                         {!! Form::close() !!}
                     </div>
+                    @endif
                 </div>
             </header>
             <!-- Left side column. contains the logo and sidebar -->

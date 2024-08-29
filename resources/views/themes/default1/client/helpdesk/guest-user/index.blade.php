@@ -65,11 +65,13 @@
                     <span class="widgetitemtitle" style="color: rgb(0, 154, 186)">{!! Lang::get('lang.my_tickets') !!}</span>
                 </a>
             </span>
-            <span onclick="javascript: window.location.href='{{url('/knowledgebase')}}';">
-                <a href="{{url('/knowledgebase')}}" class="widgetrowitem defaultwidget" style="background-image: URL('lb-faveo/media/images/knowledgebase.png');">
-                    <span class="widgetitemtitle" style="color: rgb(0, 154, 186)">{!! Lang::get('lang.knowledge_base') !!}</span>
-                </a>
-            </span>
+            @if($kb->status == 1)
+                <span onclick="javascript: window.location.href='{{url('/knowledgebase')}}';">
+                    <a href="{{url('/knowledgebase')}}" class="widgetrowitem defaultwidget" style="background-image: URL('lb-faveo/media/images/knowledgebase.png');">
+                        <span class="widgetitemtitle" style="color: rgb(0, 154, 186)">{!! Lang::get('lang.knowledge_base') !!}</span>
+                    </a>
+                </span>
+            @endif
         </div>
     </div>
 <script type="text/javascript"> $(function(){ $('.dialogerror, .dialoginfo, .dialogalert').fadeIn('slow');$("form").bind("submit", function(e){$(this).find("input:submit").attr("disabled", "disabled");});});</script>

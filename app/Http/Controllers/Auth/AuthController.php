@@ -135,6 +135,7 @@ class AuthController extends Controller
         $email_mandatory = $settings->select('status')->where('option_name', '=', 'email_mandatory')->first();
         //dd($settings->status);
         event(new \App\Events\FormRegisterEvent());
+        $kb = CommonSettings::where('option_name', '=', 'knowledge_base')->first();
         if (Auth::user()) {
             if (Auth::user()->role == 'admin' || Auth::user()->role == 'agent') {
                 return \Redirect::route('dashboard');
@@ -142,7 +143,7 @@ class AuthController extends Controller
                 // return view('auth.register');
             }
         } else {
-            return view('auth.register', compact('settings', 'email_mandatory'));
+            return view('auth.register', compact('settings', 'email_mandatory', 'kb'));
         }
     }
 
@@ -277,6 +278,7 @@ class AuthController extends Controller
     public function getLogin()
     {
         $directory = base_path();
+        $kb = CommonSettings::where('option_name', '=', 'knowledge_base')->first();
         if (file_exists($directory.DIRECTORY_SEPARATOR.'.env')) {
             if (Auth::user()) {
                 if (Auth::user()->role == 'admin' || Auth::user()->role == 'agent') {
@@ -285,7 +287,7 @@ class AuthController extends Controller
                     return \Redirect::route('home');
                 }
             } else {
-                return view('auth.login');
+                return view('auth.login', compact('kb'));
             }
         } else {
             return Redirect::route('licence');

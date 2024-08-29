@@ -85,7 +85,9 @@ class FormController extends Controller
 
             [$max_size_in_bytes, $max_size_in_actual] = $this->fileUploadController->file_upload_max_size();
 
-            return view('themes.default1.client.helpdesk.form', compact('topics', 'codes', 'email_mandatory', 'max_size_in_bytes', 'max_size_in_actual'))->with('phonecode', $phonecode);
+            $kb = CommonSettings::where('option_name', '=', 'knowledge_base')->first();
+
+            return view('themes.default1.client.helpdesk.form', compact('topics', 'codes', 'email_mandatory', 'max_size_in_bytes', 'max_size_in_actual', 'kb'))->with('phonecode', $phonecode);
         } else {
             return \Redirect::route('home');
         }
@@ -315,7 +317,7 @@ class FormController extends Controller
         $html = '';
         $helptopic_id = $request->input('helptopic');
         $helptopics = new Help_topic();
-        $helptopic = $helptopics->find($helptopic_id);
+        $helptopic = $helptopics->find($helptopic_id);dd($helptopic);
         if (!$helptopic) {
             throw new Exception('We can not find your request');
         }
