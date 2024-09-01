@@ -208,6 +208,13 @@ class SettingsController extends Controller
                 $usts->status = $request->user_set_ticket_status;
                 $usts->save();
             }
+
+            $kb = CommonSettings::where('option_name', '=', 'knowledge_base')->first();
+            if ($kb->status != $request->knowledge_base) {
+                $kb->status = $request->knowledge_base;
+                $kb->save();
+            }
+
             $sotp = CommonSettings::where('option_name', '=', 'send_otp')
                     ->update(['status' => $request->send_otp]);
             $email_mandatory = CommonSettings::where('option_name', '=', 'email_mandatory')
