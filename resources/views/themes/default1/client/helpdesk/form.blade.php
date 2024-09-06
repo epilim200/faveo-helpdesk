@@ -174,13 +174,21 @@ class = "nav-item active"
                             {!! Form::label('help_topic', Lang::get('lang.choose_a_help_topic')) !!}
                             {!! $errors->first('help_topic', '<spam class="help-block">:message</spam>') !!}
                             <?php
-                            $forms = App\Model\helpdesk\Form\Forms::get();
-                            $helptopic = App\Model\helpdesk\Manage\Help_topic::where('status', '=', 1)->get();
-//                            ?><!---->
+                                $forms = App\Model\helpdesk\Form\Forms::get();
+                                $helptopic = App\Model\helpdesk\Manage\Help_topic::where(['status' => 1, 'parent_topic' => ''])->get();
+                            ?>
                             <select name="helptopic" class="form-control" id="selectid">
-
                                 @foreach($helptopic as $topic)
-                                <option value="{!! $topic->id !!}">{!! $topic->topic !!}</option>
+                                    <?php $helptopic_sub = App\Model\helpdesk\Manage\Help_topic::where(['parent_topic' => $topic->id, 'status' => 1])->get(); ?>
+                                    @if(count($helptopic_sub) > 0)
+                                        <optgroup label="{{$topic->topic}}">
+                                            @foreach($helptopic_sub as $topic_sub)
+                                                <option value="{!! $topic_sub->id !!}">{!! $topic_sub->topic !!}</option>
+                                            @endforeach
+                                        </optgroup>
+                                    @else
+                                        <option value="{!! $topic->id !!}">{!! $topic->topic !!}</option>
+                                    @endif
                                 @endforeach
                             </select>
                         </div>
@@ -190,9 +198,8 @@ class = "nav-item active"
                          $user_Priority=$Priority->status;
                         ?>
 
-                         @if(Auth::user())
-
-                         @if(Auth::user()->active == 1)
+                        @if(Auth::user())
+                        @if(Auth::user()->active == 1)
                         @if($user_Priority == 1)
 
                         <div class="col-md-12 form-group">
@@ -206,9 +213,11 @@ class = "nav-item active"
                                 </div>
                              </div>
                         </div>
+
                         @endif
                         @endif
                         @endif
+                        
                         <div class="col-md-12 form-group {{ $errors->has('Subject') ? 'has-error' : '' }}">
                             {!! Form::label('Subject',Lang::get('lang.subject')) !!}<span class="text-red"> *</span>
                             {!! Form::text('Subject',null,['class' => 'form-control']) !!}
