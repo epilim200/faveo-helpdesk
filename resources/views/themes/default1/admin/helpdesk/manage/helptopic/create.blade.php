@@ -106,7 +106,7 @@ class="nav-link active"
             <div class="col-md-4">
                 <div class="form-group {{ $errors->has('parent_topic') ? 'has-error' : '' }}">
                     {!! Form::label('parent_topic',Lang::get('lang.parent_topic')) !!}
-                    {!!Form::select('parent_topic',['' => Lang::get('lang.select_a_parent_topic')] + $topics->pluck('topic','topic')->toArray(),1,['class' => 'form-control']) !!}
+                    {!!Form::select('parent_topic',['' => Lang::get('lang.select_a_parent_topic')] + $topics->pluck('topic','id')->toArray(),1,['class' => 'form-control']) !!}
                 </div>
             </div>
             <!-- Custom Form: Drop down: value from form table -->
