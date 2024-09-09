@@ -29,7 +29,7 @@ class HelptopicRequest extends Request
     public function rules()
     {
         return [
-            'topic' => 'required|unique:help_topic|max:50',
+            'topic' => 'required|unique:help_topic|max:255',
             // 'parent_topic' => 'required',
             // 'custom_form' => 'required',
             'department' => 'required',
