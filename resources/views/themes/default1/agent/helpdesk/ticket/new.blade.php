@@ -182,6 +182,18 @@ class="active"
                     <div class="row">
                         <div class="col-md-3">
                             <div class="form-group">
+                                <label>{!! Lang::get('lang.ticket_source') !!} <span class="text-red"> *</span></label>
+                                <?php $ticket_sources = App\Model\helpdesk\Ticket\Ticket_source::all() ?>
+                                <select class="form-control" name="ticket_source">
+                                    @foreach($ticket_sources as $ticketsource)
+                                    <option value="{!! $ticketsource->id !!}" >{!! $ticketsource->value !!}</option>
+                                    @endforeach 
+                                </select>
+                                <spam id="error-source" style="display:none" class="help-block text-red">This is a required field</spam>
+                            </div>
+                        </div>
+                        <div class="col-md-3">
+                            <div class="form-group">
                                 <label>{!! Lang::get('lang.help_topic') !!}:</label>
                                 <!-- helptopic -->
                                 <?php $helptopic = App\Model\helpdesk\Manage\Help_topic::where('status', '=', 1)->select('topic', 'id')->get(); ?>

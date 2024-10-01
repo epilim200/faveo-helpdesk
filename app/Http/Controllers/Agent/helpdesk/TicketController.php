@@ -126,7 +126,7 @@ class TicketController extends Controller
             } else {
                 $mobile_number = null;
             }
-            $source = Ticket_source::where('name', '=', 'agent')->first();
+            $source = $request->input('ticket_source');
             $headers = null;
             $help = Help_topic::where('id', '=', $helptopic)->first();
             $form_data = $request->except('name', 'phone', 'email', 'subject', 'body', 'helptopic', '_wysihtml5_mode', '_token', 'mobile', 'code', 'priority', 'attachment', 'first_name', 'last_name', 'sla', 'duedate', 'assignto', 'files'); //added "files" in exception list because some genius has added a new editor 'summernote' to impress his boss and screwed the functional code with his genius ability. Hence to make world capable of handling this genius's work I am adding a shitty workaround for it. After looking for solution everywhere and referring to https://stackoverflow.com/questions/59938588/summernote-adds-files-field-to-post
@@ -163,7 +163,7 @@ class TicketController extends Controller
                 }
             }
             //create user
-            $result = $this->create_user($email, $fullname, $subject, $body, $phone, $phonecode, $mobile_number, $helptopic, $sla, $priority, $source->id, $headers, $help->department, $assignto, $form_data, $auto_response, $status, $duedate);
+            $result = $this->create_user($email, $fullname, $subject, $body, $phone, $phonecode, $mobile_number, $helptopic, $sla, $priority, $source, $headers, $help->department, $assignto, $form_data, $auto_response, $status, $duedate);
             if ($result[1]) {
                 $status = $this->checkUserVerificationStatus();
                 if ($status == 1) {
