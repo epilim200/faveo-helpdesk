@@ -192,6 +192,9 @@ class = "nav-item active"
                                 @endforeach
                             </select>
                         </div>
+
+                        <div class="col-md-12" id="response"> </div>
+                        
                         <!-- priority -->
                          <?php
                          $Priority = App\Model\helpdesk\Settings\CommonSettings::select('status')->where('option_name','=', 'user_priority')->first();
@@ -232,12 +235,11 @@ class = "nav-item active"
                         </div>
                         {{-- Event fire --}}
                         <?php \Illuminate\Support\Facades\Event::dispatch(new App\Events\ClientTicketForm()); ?>
-                        <div class="col-md-12" id="response"> </div>
+                        
                         <div id="ss" class="xs-md-6 form-group {{ $errors->has('') ? 'has-error' : '' }}"> </div>
                                 <div class="col-md-12 form-group">
                                     {!! Form::button('<i class="fas fa-save"></i> ' . Lang::get('lang.submit'), ['type'=>'submit', 'class'=>'btn btn-info float-right', 'style'=>'style="border-color: rgb(0, 192, 239); background-color: rgb(0, 154, 186); color: white;', 'onclick' => 'this.disabled=true;this.innerHTML="Sending, please wait...";this.form.submit();', 'data-v-fce8d630']) !!}
                                 </div>
-                            <div class="col-md-12" id="response"> </div>
                         <div id="ss" class="xs-md-6 form-group {{ $errors->has('') ? 'has-error' : '' }}"> </div>
 
                     {!! Form::close() !!}
