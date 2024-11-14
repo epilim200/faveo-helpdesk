@@ -317,7 +317,7 @@ class FormController extends Controller
         $html = '';
         $helptopic_id = $request->input('helptopic');
         $helptopics = new Help_topic();
-        $helptopic = $helptopics->find($helptopic_id);dd($helptopic);
+        $helptopic = $helptopics->find($helptopic_id);
         if (!$helptopic) {
             throw new Exception('We can not find your request');
         }
