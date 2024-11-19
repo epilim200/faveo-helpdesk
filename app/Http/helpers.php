@@ -43,7 +43,7 @@ function removeUnderscore($string)
         $string = str_replace('_', ' ', $string);
     }
 
-    return ucfirst($string);
+    return ucwords($string);
 }
 
 function isItil()
