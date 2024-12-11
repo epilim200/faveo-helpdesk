@@ -200,6 +200,21 @@ class FormController extends Controller
             }
             $source = $ticket_source->where('name', '=', 'web')->first()->id;
             $attachments = $request->file('attachment');
+
+            if ($attachments != null) {
+                foreach ($attachments as $attachment) {
+                    // dd($attachment->getMimeType());
+                    $valid_mime = ['application/pdf', 'image/webp', 'image/jpeg', 'image/png', 'image/gif'];
+                    if(!in_array($attachment->getMimeType(), $valid_mime)) {
+                        $data = [
+                            'fails'              => Lang::get('validation.mimetypes', ['attribute' => 'attachment', 'values' => '.pdf, .webp, .jpeg, .png or .gif']),
+                            'attachment_error' => 1,
+                        ];
+                        return Redirect::back()->with($data)->withInput($request->except('password'));
+                    }
+                }
+            }
+
             $collaborator = null;
             $assignto = null;
             if ($helpTopicObj->exists() && ($helpTopicObj->value('status') == 1)) {
