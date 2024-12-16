@@ -288,7 +288,7 @@
                                             {!! Form::text('email',null,['placeholder'=>Lang::get('lang.e-mail'),'class' => 'form-control']) !!}
                                         </div>
                                         <div class="form-group has-feedback @if(isset($errors)) {!! $errors->has('password') ? 'has-error' : '' !!} @endif">
-                                            {!! Form::password('password',['placeholder'=>Lang::get('lang.password'),'class' => 'form-control']) !!}
+                                            {!! Form::password('password',['placeholder'=>Lang::get('lang.password'),'class' => 'form-control', 'autocomplete' => 'off']) !!}
                                             <?php \Illuminate\Support\Facades\Event::dispatch('auth.login.form'); ?>
                                             <a href="{{url('password/email')}}" style="font-size: .8em" class="pull-left">{!! Lang::get('lang.forgot_password') !!}</a>
                                         </div>
