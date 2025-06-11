@@ -34,6 +34,7 @@ use App\Model\helpdesk\Ticket\Tickets;
 use App\Model\helpdesk\Utility\CountryCode;
 use App\Model\helpdesk\Utility\Date_time_format;
 use App\Model\helpdesk\Utility\Timezones;
+use App\Model\helpdesk\Settings\Responder;
 use App\User;
 use Auth;
 use Carbon\Carbon;
@@ -130,7 +131,8 @@ class TicketController extends Controller
             $headers = null;
             $help = Help_topic::where('id', '=', $helptopic)->first();
             $form_data = $request->except('name', 'phone', 'email', 'subject', 'body', 'helptopic', '_wysihtml5_mode', '_token', 'mobile', 'code', 'priority', 'attachment', 'first_name', 'last_name', 'sla', 'duedate', 'assignto', 'files'); //added "files" in exception list because some genius has added a new editor 'summernote' to impress his boss and screwed the functional code with his genius ability. Hence to make world capable of handling this genius's work I am adding a shitty workaround for it. After looking for solution everywhere and referring to https://stackoverflow.com/questions/59938588/summernote-adds-files-field-to-post
-            $auto_response = 0;
+            $responders = Responder::whereId('1')->first();
+            $auto_response = $responders->agent_new_ticket;
             $status = 1;
             if ($phone != null || $mobile_number != null) {
                 $location = GeoIP::getLocation();
@@ -701,7 +703,7 @@ class TicketController extends Controller
                 event(new \App\Events\ReadMailEvent($user_id, $password));
 
                 try {
-                    if ($auto_response == 0) {
+                    if ($auto_response == 1) {
                         $this->PhpMailController->sendmail($from = $this->PhpMailController->mailfrom('1', '0'), $to = ['name' => $user->first_name, 'email' => $emailadd], $message = ['subject' => null, 'scenario' => 'registration-notification'], $template_variables = ['user' => $user->first_name, 'email_address' => $emailadd, 'user_password' => $password]);
                         if ($user_status == 0) {
                             $this->PhpMailController->sendmail($from = $this->PhpMailController->mailfrom('1', '0'), $to = ['name' => $user->first_name, 'email' => $emailadd], $message = ['subject' => null, 'scenario' => 'registration'], $template_variables = ['user' => $user->first_name, 'email_address' => $emailadd, 'password_reset_link' => url('account/activate/'.$token)]);
@@ -738,7 +740,7 @@ class TicketController extends Controller
                 $link = url('check_ticket/'.$encoded_ticketid);
                 if ($source == 3) {
                     try {
-                        if ($auto_response == 0) {
+                        if ($auto_response == 1) {
                             $encoded_ticketid = Crypt::encrypt($ticketdata->id);
                             $link = url('check_ticket/'.$encoded_ticketid);
                             $this->PhpMailController->sendmail(
@@ -759,7 +761,7 @@ class TicketController extends Controller
                     $body2 = null;
 
                     try {
-                        if ($auto_response == 0) {
+                        if ($auto_response == 1) {
                             $this->PhpMailController->sendmail(
                                 $from = $this->PhpMailController->mailfrom('0', $ticketdata->dept_id),
                                 $to = ['name' => $username, 'email' => $emailadd],
