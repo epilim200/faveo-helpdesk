@@ -183,12 +183,8 @@ class="active"
                         <div class="col-md-3">
                             <div class="form-group">
                                 <label>{!! Lang::get('lang.ticket_source') !!} <span class="text-red"> *</span></label>
-                                <?php $ticket_sources = App\Model\helpdesk\Ticket\Ticket_source::all() ?>
-                                <select class="form-control" name="ticket_source">
-                                    @foreach($ticket_sources as $ticketsource)
-                                    <option value="{!! $ticketsource->id !!}" >{!! $ticketsource->value !!}</option>
-                                    @endforeach 
-                                </select>
+                                <?php $ticketSources = App\Model\helpdesk\Ticket\Ticket_source::where('status', '=', 1)->select('value', 'id')->get(); ?>
+                                {!! Form::select('ticket_source', ['Ticket Source' => $ticketSources->pluck('value','id')->toArray()],null,['class' => 'form-control select','id'=>'selectid']) !!}
                                 <spam id="error-source" style="display:none" class="help-block text-red">This is a required field</spam>
                             </div>
                         </div>

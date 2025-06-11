@@ -627,6 +627,13 @@
                                             <p>{!! Lang::get('storage::lang.storage') !!}</p>
                                         </a>
                                     </li>
+
+                                    <li class="nav-item">
+                                        <a href="{{url('ticket-source')}}" @yield('ticket-source') class="nav-link">
+                                            <i class="nav-icon fas fa-save"></i>
+                                            <p>{!! Lang::get('lang.ticket-source.plural') !!}</p>
+                                        </a>
+                                    </li>
                                 </ul>
                             </li>
 

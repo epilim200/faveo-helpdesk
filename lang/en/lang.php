@@ -496,6 +496,24 @@ return [
 
     /*
       |--------------------------------------
+      |   Ticket Source Settings Page
+      |--------------------------------------
+     */
+    'ticket-source' => [
+        'singular' => 'Ticket Source',
+        'plural' => 'Ticket Sources',
+        'id' => 'ID',
+        'name' => 'Name',
+        'value' => 'Value',
+        'css_class' => 'CSS Class',
+        'status' => 'Status',
+        'btn-edit' => 'Edit',
+        'title-update' => 'Update Ticket Source',
+        'msg-successfully_update' => 'Ticket Source updated successfully.',
+    ],
+
+    /*
+      |--------------------------------------
       | Plugin Settings
       |--------------------------------------
      */

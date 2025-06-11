@@ -182,6 +182,11 @@ Route::middleware('web')->group(function () {
         Route::patch('security/{id}', [Admin\helpdesk\SecurityController::class, 'update'])->name('securitys.update'); // direct to security setting page
         Route::get('setting-status', [Admin\helpdesk\SettingsController::class, 'getStatuses'])->name('statuss.index'); // direct to status setting page
 
+        // Ticket Source
+        Route::get('ticket-source', [Admin\helpdesk\TicketSourceController::class, 'index'])->name('ticket-source.index');
+        Route::get('ticket-source/{id}/edit', [Admin\helpdesk\TicketSourceController::class, 'edit'])->name('ticket-source.edit');
+        Route::put('ticket-source/{id}', [Admin\helpdesk\TicketSourceController::class, 'update'])->name('ticket-source.update');
+
         Route::patch('status-update/{id}', [Admin\helpdesk\SettingsController::class, 'editStatuses'])->name('statuss.update');
 
         Route::get('status/edit/{id}', [Admin\helpdesk\SettingsController::class, 'getEditStatuses'])->name('status.edit');
