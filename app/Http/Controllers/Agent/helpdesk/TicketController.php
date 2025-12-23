@@ -718,7 +718,7 @@ class TicketController extends Controller
             $user_id = $checkemail->id;
         }
         event(new \App\Events\ClientTicketFormPost($from_data, $emailadd, $source));
-        $ticket_number = $this->check_ticket($user_id, $subject, $body, $helptopic, $sla, $priority, $source, $headers, $dept, $assignto, $from_data, $status, $duedate);
+        $ticket_number = $this->check_ticket($user_id, $subject, $body, $helptopic, $sla, $priority, $source, $headers, $dept, $assignto, $from_data, $status, $duedate, $auto_response);
 
         $ticket_number2 = $ticket_number[0];
         $ticketdata = Tickets::where('ticket_number', '=', $ticket_number2)->first();
@@ -916,7 +916,7 @@ class TicketController extends Controller
      *
      * @return type string
      */
-    public function check_ticket($user_id, $subject, $body, $helptopic, $sla, $priority, $source, $headers, $dept, $assignto, $form_data, $status, $duedate = null)
+    public function check_ticket($user_id, $subject, $body, $helptopic, $sla, $priority, $source, $headers, $dept, $assignto, $form_data, $status, $duedate = null, $auto_response = 1)
     {
         $read_ticket_number = explode('[#', $subject);
         if (isset($read_ticket_number[1])) {
@@ -969,12 +969,12 @@ class TicketController extends Controller
                     }
                 }
             } else {
-                $ticket_number = $this->createTicket($user_id, $subject, $body, $helptopic, $sla, $priority, $source, $headers, $dept, $assignto, $form_data, $status, $duedate);
+                $ticket_number = $this->createTicket($user_id, $subject, $body, $helptopic, $sla, $priority, $source, $headers, $dept, $assignto, $form_data, $status, $duedate, $auto_response);
 
                 return [$ticket_number, 0];
             }
         } else {
-            $ticket_number = $this->createTicket($user_id, $subject, $body, $helptopic, $sla, $priority, $source, $headers, $dept, $assignto, $form_data, $status, $duedate);
+            $ticket_number = $this->createTicket($user_id, $subject, $body, $helptopic, $sla, $priority, $source, $headers, $dept, $assignto, $form_data, $status, $duedate, $auto_response);
 
             return [$ticket_number, 0];
         }
@@ -992,7 +992,7 @@ class TicketController extends Controller
      *
      * @return type string
      */
-    public function createTicket($user_id, $subject, $body, $helptopic, $sla, $priority, $source, $headers, $dept, $assignto, $form_data, $status, $duedate = null)
+    public function createTicket($user_id, $subject, $body, $helptopic, $sla, $priority, $source, $headers, $dept, $assignto, $form_data, $status, $duedate = null, $auto_response = 1)
     {
         $ticket_number = '';
         $max_number = Tickets::whereRaw('id = (select max(`id`) from tickets)')->first();
@@ -1083,7 +1083,7 @@ class TicketController extends Controller
         event('after.ticket.created', [['ticket' => $ticket, 'form_data' => $form_data]]);
 
         // store collaborators
-        $this->storeCollaborators($headers, $id);
+        $this->storeCollaborators($headers, $id, $auto_response);
         if ($this->ticketThread($subject, $body, $id, $user_id) == true) {
             return $ticket_number;
         }
@@ -1530,7 +1530,7 @@ class TicketController extends Controller
      *
      * @return type
      */
-    public function storeCollaborators($headers, $id)
+    public function storeCollaborators($headers, $id, $auto_response = 1)
     {
         $company = $this->company();
         if (isset($headers)) {
@@ -1553,7 +1553,9 @@ class TicketController extends Controller
                     $user_id = $create_user->id;
 
                     try {
-                        $this->PhpMailController->sendmail($from = $this->PhpMailController->mailfrom('1', '0'), $to = ['name' => $name, 'email' => $email], $message = ['subject' => 'password', 'scenario' => 'registration-notification'], $template_variables = ['user' => $name, 'email_address' => $email, 'user_password' => $password]);
+                        if ($auto_response == 1) {
+                            $this->PhpMailController->sendmail($from = $this->PhpMailController->mailfrom('1', '0'), $to = ['name' => $name, 'email' => $email], $message = ['subject' => 'password', 'scenario' => 'registration-notification'], $template_variables = ['user' => $name, 'email_address' => $email, 'user_password' => $password]);
+                        }
                     } catch (\Exception $e) {
                     }
                 } else {
