@@ -466,12 +466,24 @@ class TicketController extends Controller
             return 5;
         } else {
             $ticket = $ticket->where('id', '=', $ticket_id)->first();
+            $old_sla = $ticket->sla;
             $ticket->sla = Input::get('sla_paln');
             $ticket->help_topic_id = Input::get('help_topic');
             $ticket->source = Input::get('ticket_source');
             $ticket->priority_id = Input::get('ticket_priority');
             $dept = Help_topic::select('department')->where('id', '=', $ticket->help_topic_id)->first();
             $ticket->dept_id = $dept->department;
+
+            // Recalculate due date if SLA changed
+            if ($old_sla != $ticket->sla) {
+                $sla_plan = Sla_plan::where('id', '=', $ticket->sla)->first();
+                if ($sla_plan) {
+                    $created_at = new \DateTime($ticket->created_at);
+                    $created_at->add(\DateInterval::createFromDateString($sla_plan->grace_period));
+                    $ticket->duedate = $created_at->format('Y-m-d H:i:s');
+                }
+            }
+
             $ticket->save();
 
             $threads = $thread->where('ticket_id', '=', $ticket_id)->first();
@@ -1838,9 +1850,9 @@ class TicketController extends Controller
         $tz = $timezone->name;
         $format = $set->date_time_format;
         date_default_timezone_set($tz);
-        $offset = date('Z', strtotime($utc));
         $format = Date_time_format::whereId($format)->first()->format;
-        $date = date($format, strtotime($utc) + $offset);
+        // date() already uses the timezone set above, no need to add offset
+        $date = date($format, strtotime($utc));
 
         return $date;
     }

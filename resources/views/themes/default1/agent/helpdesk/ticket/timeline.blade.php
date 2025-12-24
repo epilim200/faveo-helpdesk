@@ -235,14 +235,13 @@ if ($thread->title != "") {
                 </div>
                 <div class="col-md-3">
                     <b>{!! Lang::get('lang.due_date') !!}: </b>
+                    {{ UTC::usertimezone($tickets->duedate) }}
+                    <br/>
                     <?php
-                    $duedate = $tickets->duedate;
-                    $user_timezone = new DateTimeZone('Asia/Kolkata');
-                    $time = date_create($tickets->duedate, $user_timezone);
-                    date_add($time, date_interval_create_from_date_string($SlaPlan->grace_period));
-                    date_add($time, date_interval_create_from_date_string('30 minutes'));
-                    echo $time->format('Y-m-d H:i:s');
+                        // Database stores correct local time, just parse and get timestamp
+                        $dueDateTimestampMs = strtotime($tickets->duedate) * 1000;
                     ?>
+                    <span id="due-countdown" data-duedate-ms="{{ $dueDateTimestampMs }}"></span>
                 </div>
                 <div class="col-md-3">
                     <?php $response = App\Model\helpdesk\Ticket\Ticket_Thread::where('ticket_id', '=', $tickets->id)->get(); ?>
@@ -1297,6 +1296,41 @@ if ($thread->title != "") {
 <?php $var = App\Model\helpdesk\Settings\Ticket::where('id', '=', 1)->first(); ?>
 
 <!-- scripts used on page -->
+<script type="text/javascript">
+    // Real-time due date countdown
+    function updateDueCountdown() {
+        var countdownEl = document.getElementById('due-countdown');
+        if (!countdownEl) return;
+
+        var dueDateMs = countdownEl.getAttribute('data-duedate-ms');
+        if (!dueDateMs) return;
+
+        var dueDate = parseInt(dueDateMs);
+        var now = Date.now();
+        var diff = dueDate - now;
+
+        var days = Math.floor(Math.abs(diff) / (1000 * 60 * 60 * 24));
+        var hours = Math.floor((Math.abs(diff) % (1000 * 60 * 60 * 24)) / (1000 * 60 * 60));
+        var minutes = Math.floor((Math.abs(diff) % (1000 * 60 * 60)) / (1000 * 60));
+        var seconds = Math.floor((Math.abs(diff) % (1000 * 60)) / 1000);
+
+        var timeStr = '';
+        if (days > 0) timeStr += days + 'd ';
+        if (hours > 0 || days > 0) timeStr += hours + 'h ';
+        timeStr += minutes + 'm ' + seconds + 's';
+
+        if (diff > 0) {
+            countdownEl.innerHTML = '<span class="badge badge-success"><i class="fas fa-clock"></i> ' + timeStr + ' remaining</span>';
+        } else {
+            countdownEl.innerHTML = '<span class="badge badge-danger"><i class="fas fa-exclamation-triangle"></i> Overdue by ' + timeStr + '</span>';
+        }
+    }
+
+    // Update every second
+    updateDueCountdown();
+    setInterval(updateDueCountdown, 1000);
+</script>
+
 <script type="text/javascript">
             function clearAll() {
                 $("#file_details").html("");
