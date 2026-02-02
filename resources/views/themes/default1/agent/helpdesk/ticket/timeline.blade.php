@@ -232,14 +232,37 @@ if ($thread->title != "") {
                     <b>{!! Lang::get('lang.created_date') !!}: </b> {{ UTC::usertimezone($tickets->created_at) }}
                 </div>
                 <div class="col-md-3">
-                    <b>{!! Lang::get('lang.due_date') !!}: </b>
-                    {{ UTC::usertimezone($tickets->duedate) }}
-                    <br/>
-                    <?php
-                        // Database stores correct local time, just parse and get timestamp
-                        $dueDateTimestampMs = strtotime($tickets->duedate) * 1000;
-                    ?>
-                    <span id="due-countdown" data-duedate-ms="{{ $dueDateTimestampMs }}"></span>
+                    @if($tickets->status == 2 || $tickets->status == 3)
+                        {{-- Ticket is Resolved or Closed - show resolution time --}}
+                        <b>{!! Lang::get('lang.due_date') !!}: </b>
+                        <span class="badge badge-success" style="background-color: #27ae60; padding: 5px 10px;">Completed</span>
+                        <br/>
+                        <?php
+                            // Calculate resolution duration
+                            $created = new DateTime($tickets->created_at);
+                            $closed = new DateTime($tickets->closed_at);
+                            $interval = $created->diff($closed);
+
+                            $duration_parts = [];
+                            if ($interval->d > 0) $duration_parts[] = $interval->d . 'd';
+                            if ($interval->h > 0) $duration_parts[] = $interval->h . 'h';
+                            if ($interval->i > 0) $duration_parts[] = $interval->i . 'm';
+                            $duration_str = implode(' ', $duration_parts) ?: '< 1m';
+                        ?>
+                        <span style="color: #27ae60; font-weight: bold;">
+                            <i class="fas fa-clock"></i> Resolution Time: {{ $duration_str }}
+                        </span>
+                    @else
+                        {{-- Ticket is still open - show countdown --}}
+                        <b>{!! Lang::get('lang.due_date') !!}: </b>
+                        {{ UTC::usertimezone($tickets->duedate) }}
+                        <br/>
+                        <?php
+                            // Database stores correct local time, just parse and get timestamp
+                            $dueDateTimestampMs = strtotime($tickets->duedate) * 1000;
+                        ?>
+                        <span id="due-countdown" data-duedate-ms="{{ $dueDateTimestampMs }}"></span>
+                    @endif
                 </div>
                 <div class="col-md-3">
                     <?php $response = App\Model\helpdesk\Ticket\Ticket_Thread::where('ticket_id', '=', $tickets->id)->get(); ?>
