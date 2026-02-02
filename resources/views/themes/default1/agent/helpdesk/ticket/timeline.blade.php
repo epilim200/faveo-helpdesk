@@ -171,27 +171,25 @@ if ($thread->title != "") {
                     {!! Lang::get('lang.change_status') !!} <span class="caret"></span>
                 </button>
                 <div class="dropdown-menu">
+                    {{-- Open option: only show if ticket is NOT Open (status != 1) --}}
+                    @if($tickets_approval->status != 1)
                     <a href="#" id="open" class="dropdown-item"><i class="fas fa-folder-open" style="color:red;"> </i> {!! Lang::get('lang.open') !!}</a>
+                    @endif
 
-                    <?php if ( $tickets_approval->status==7) {?>
-                  @if(Auth::user()->role == 'admin')
-                     <a href="#" id="approval_close" class="dropdown-item"><i class="fas fa-thumbs-up" style="color:red;"> </i> {!! Lang::get('lang.approval') !!}</a>
-                     @endif
-                    
-                    <?php } ?>
+                    {{-- Approval option: only for admin when status is Request Approval (7) --}}
+                    @if($tickets_approval->status == 7 && Auth::user()->role == 'admin')
+                    <a href="#" id="approval_close" class="dropdown-item"><i class="fas fa-thumbs-up" style="color:red;"> </i> {!! Lang::get('lang.approval') !!}</a>
+                    @endif
 
-                     <?php if ( $tickets_approval->status==3) {?>
-                    <?php if ($group->can_edit_ticket == 1) {?>
-                    <a href="#"  id="close" class="dropdown-item"><i class="fas fa-check" style="color:green;"> </i> {!! Lang::get('lang.close') !!}</a>
-                    <?php } ?>
-                     <?php } ?>
-
-                     <?php if ( $tickets_approval->status==1) {?>
-                    <?php if ($group->can_edit_ticket == 1) {?>
+                    {{-- Close option: only show if ticket is Resolved (status = 2) --}}
+                    @if($tickets_approval->status == 2 && $group->can_edit_ticket == 1)
                     <a href="#" id="close" class="dropdown-item"><i class="fas fa-check" style="color:green;"> </i> {!! Lang::get('lang.close') !!}</a>
-                    <?php } ?>
-                     <?php } ?>
+                    @endif
+
+                    {{-- Resolved option: only show if ticket is Open (status = 1) --}}
+                    @if($tickets_approval->status == 1)
                     <a href="#" id="resolved" class="dropdown-item"><i class="fas fa-check-circle " style="color:green;"> </i> {!! Lang::get('lang.resolved') !!} </a>
+                    @endif
                 </div>
             </div>
             <?php if ($group->can_delete_ticket == 1 || $group->can_ban_email == 1) { ?>
