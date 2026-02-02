@@ -100,6 +100,7 @@
                     <?php
                     $company = App\Model\helpdesk\Settings\Company::where('id', '=', '1')->first();
                     $system = App\Model\helpdesk\Settings\System::where('id', '=', '1')->first();
+                    $kb = App\Model\helpdesk\Settings\CommonSettings::where('option_name', '=', 'knowledge_base')->first();
                     ?>
                     @if($system->url)
                         <a href="{!! $system->url !!}" rel="home">
@@ -135,7 +136,7 @@
                                 <a href="{{URL::route('form')}}" class="nav-link">{!! Lang::get('lang.submit_a_ticket') !!}</a>
                             </li>
                         @endif
-                        @if($kb->status == 1)
+                        @if($kb && $kb->status == 1)
                         <li @yield('kb') class="nav-item dropdown">
                             <a href="{!! url('knowledgebase') !!}" class="dropdown-toggle nav-link" id="navbarDropdown" role="button" data-toggle=""
                                aria-haspopup="true" aria-expanded="false">{!! Lang::get('lang.knowledge_base') !!}
@@ -213,7 +214,7 @@
                     </ul>
                 </div>
             </nav>
-            @if($kb->status == 1)
+            @if($kb && $kb->status == 1)
             <div id="header-search" class="site-search clearfix" style="margin-right: 90%; width: 100%"><!-- #header-search -->
                 {!!Form::open(['route' => 'client.search','class'=>'search-form clearfix'])!!}
                 <div class="form-border" style="z-index: 0;width: 95%;">
