@@ -234,22 +234,31 @@ if ($thread->title != "") {
                 <div class="col-md-3">
                     @if($tickets->status == 2 || $tickets->status == 3)
                         {{-- Ticket is Resolved or Closed - show resolution time --}}
-                        <b>{!! Lang::get('lang.due_date') !!}: </b>
-                        <span class="badge badge-success" style="background-color: #27ae60; padding: 5px 10px;">Completed</span>
-                        <br/>
                         <?php
                             // Calculate resolution duration
                             $created = new DateTime($tickets->created_at);
                             $closed = new DateTime($tickets->closed_at);
+                            $duedate = new DateTime($tickets->duedate);
                             $interval = $created->diff($closed);
 
                             $duration_parts = [];
-                            if ($interval->d > 0) $duration_parts[] = $interval->d . 'd';
+                            if ($interval->days > 0) $duration_parts[] = $interval->days . 'd';
                             if ($interval->h > 0) $duration_parts[] = $interval->h . 'h';
                             if ($interval->i > 0) $duration_parts[] = $interval->i . 'm';
                             $duration_str = implode(' ', $duration_parts) ?: '< 1m';
+
+                            // Check SLA compliance
+                            $sla_compliant = ($closed <= $duedate);
+                            $sla_color = $sla_compliant ? '#27ae60' : '#e74c3c';
+                            $sla_icon = $sla_compliant ? 'fa-check-circle' : 'fa-times-circle';
+                            $sla_text = $sla_compliant ? 'Within SLA' : 'SLA Breached';
                         ?>
-                        <span style="color: #27ae60; font-weight: bold;">
+                        <b>{!! Lang::get('lang.due_date') !!}: </b>
+                        <span class="badge" style="background-color: {{ $sla_color }}; padding: 5px 10px; color: #fff;">
+                            <i class="fas {{ $sla_icon }}"></i> {{ $sla_text }}
+                        </span>
+                        <br/>
+                        <span class="badge" style="background-color: #6c757d; padding: 5px 10px; color: #fff; margin-top: 5px; display: inline-block;">
                             <i class="fas fa-clock"></i> Resolution Time: {{ $duration_str }}
                         </span>
                     @else
