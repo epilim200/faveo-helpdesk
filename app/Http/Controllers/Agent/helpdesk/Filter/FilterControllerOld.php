@@ -242,6 +242,7 @@ class FilterControllerOld extends Controller
                     ->leftJoin('ticket_thread as ticket_thread2', 'ticket_thread2.ticket_id', '=', 'tickets.id')
                     ->Join('ticket_source', 'ticket_source.id', '=', 'tickets.source')
                     ->leftJoin('ticket_priority', 'ticket_priority.priority_id', '=', 'tickets.priority_id')
+                    ->leftJoin('ticket_status as ts', 'ts.id', '=', 'tickets.status')
                     ->leftJoin('users as u', 'u.id', '=', 'tickets.user_id')
                     ->leftJoin('users as u1', 'u1.id', '=', 'tickets.assigned_to')
                     ->leftJoin('ticket_attachment', 'ticket_attachment.thread_id', '=', 'ticket_thread.id')
@@ -268,7 +269,7 @@ class FilterControllerOld extends Controller
                         'tickets.user_id',
                         'tickets.priority_id',
                         'tickets.assigned_to',
-                        'ticket_status.name as tickets_status',
+                        DB::raw('MAX(ts.name) as status_name'),
                         'ticket_source.css_class as css',
                         DB::raw('substring_index(group_concat(ticket_thread.poster order by ticket_thread.id desc) , ",", 1) as last_replier'),
                         DB::raw('substring_index(group_concat(ticket_thread.title order by ticket_thread.id asc) , ",", 1) as ticket_title'),

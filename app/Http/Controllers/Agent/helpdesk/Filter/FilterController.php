@@ -98,6 +98,7 @@ class FilterController extends Controller
         $tickets = $ticket
                         ->leftJoin('ticket_source', 'ticket_source.id', '=', 'tickets.source')
                         ->leftJoin('ticket_priority', 'ticket_priority.priority_id', '=', 'tickets.priority_id')
+                        ->leftJoin('ticket_status', 'ticket_status.id', '=', 'tickets.status')
                         ->leftJoin('users as u1', 'u1.id', '=', 'tickets.user_id')
                         ->leftJoin('teams', 'teams.id', '=', 'tickets.team_id')
                         ->leftJoin('users as u2', 'u2.id', '=', 'tickets.assigned_to')
@@ -133,7 +134,10 @@ class FilterController extends Controller
                             \DB::raw('COUNT(DISTINCT th.id) as countthread'),
                             \DB::raw('substring_index(group_concat(if(`th`.`is_internal` = 0, `th`.`poster`,null)ORDER By th.id desc) , ",", 1) as last_replier'),
                             \DB::raw('substring_index(group_concat(th.title order by th.id asc SEPARATOR "-||,||-") , "-||,||-", 1) as ticket_title'),
-                            'ticket_source.name as source'
+                            'ticket_source.name as source',
+                            'tickets.status as ticket_status',
+                            \DB::raw('MAX(ticket_status.name) as status_name'),
+                            'tickets.closed_at'
                         )->groupby('tickets.id');
 
         return $tickets;

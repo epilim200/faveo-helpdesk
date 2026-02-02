@@ -2799,11 +2799,27 @@ class TicketController extends Controller
                                 $now = strtotime(\Carbon\Carbon::now()->tz(timezone()));
                                 $duedate = strtotime($tickets->duedate);
 
-                                if ($duedate - $now < 0) {
-                                    $due = '&nbsp;<span style="background-color: rgba(221, 75, 57, 0.67) !important" title="'.Lang::get('lang.is_overdue').'" class="label label-danger">'.Lang::get('lang.overdue').'</span>';
+                                // For closed tickets, compare due date with closed_at time
+                                // Status 3 = Closed, or check closed_at is set
+                                $isClosed = (isset($tickets->ticket_status) && $tickets->ticket_status == 3) ||
+                                           (isset($tickets->closed_at) && $tickets->closed_at != null);
+
+                                if ($isClosed && isset($tickets->closed_at) && $tickets->closed_at != null) {
+                                    // Ticket is closed - compare duedate with closed_at
+                                    $closedAt = strtotime($tickets->closed_at);
+                                    if ($duedate - $closedAt < 0) {
+                                        // Was overdue when closed
+                                        $due = '&nbsp;<span style="background-color: rgba(221, 75, 57, 0.67) !important" title="'.Lang::get('lang.is_overdue').'" class="label label-danger">'.Lang::get('lang.overdue').'</span>';
+                                    }
+                                    // If closed before due date, no indicator shown
                                 } else {
-                                    if (date('Ymd', $duedate) == date('Ymd', $now)) {
-                                        $due = '&nbsp;<span style="background-color: rgba(240, 173, 78, 0.67) !important" title="'.Lang::get('lang.going-overdue-today').'" class="label label-warning">'.Lang::get('lang.duetoday').'</span>';
+                                    // Ticket is open - compare duedate with now
+                                    if ($duedate - $now < 0) {
+                                        $due = '&nbsp;<span style="background-color: rgba(221, 75, 57, 0.67) !important" title="'.Lang::get('lang.is_overdue').'" class="label label-danger">'.Lang::get('lang.overdue').'</span>';
+                                    } else {
+                                        if (date('Ymd', $duedate) == date('Ymd', $now)) {
+                                            $due = '&nbsp;<span style="background-color: rgba(240, 173, 78, 0.67) !important" title="'.Lang::get('lang.going-overdue-today').'" class="label label-warning">'.Lang::get('lang.duetoday').'</span>';
+                                        }
                                     }
                                 }
                             }
@@ -2891,6 +2907,7 @@ class TicketController extends Controller
                     Lang::get('lang.subject'),
                     Lang::get('lang.ticket_id'),
                     Lang::get('lang.priority'),
+                    Lang::get('lang.status'),
                     Lang::get('lang.from'),
                     Lang::get('lang.assigned_to'),
                     Lang::get('lang.last_activity'),
@@ -2914,6 +2931,7 @@ class TicketController extends Controller
                     Lang::get('lang.subject'),
                     Lang::get('lang.ticket_id'),
                     Lang::get('lang.priority'),
+                    Lang::get('lang.status'),
                     Lang::get('lang.from'),
                     Lang::get('lang.assigned_to'),
                     Lang::get('lang.last_activity'),
@@ -2937,6 +2955,7 @@ class TicketController extends Controller
                     Lang::get('lang.subject'),
                     Lang::get('lang.ticket_id'),
                     Lang::get('lang.priority'),
+                    Lang::get('lang.status'),
                     Lang::get('lang.from'),
                     Lang::get('lang.assigned_to'),
                     Lang::get('lang.last_activity'),
@@ -2960,6 +2979,7 @@ class TicketController extends Controller
                     Lang::get('lang.subject'),
                     Lang::get('lang.ticket_id'),
                     Lang::get('lang.priority'),
+                    Lang::get('lang.status'),
                     Lang::get('lang.from'),
                     Lang::get('lang.assigned_to'),
                     Lang::get('lang.last_activity'),
@@ -2983,6 +3003,7 @@ class TicketController extends Controller
                     Lang::get('lang.subject'),
                     Lang::get('lang.ticket_id'),
                     Lang::get('lang.priority'),
+                    Lang::get('lang.status'),
                     Lang::get('lang.from'),
                     Lang::get('lang.assigned_to'),
                     Lang::get('lang.last_activity'),
@@ -3006,6 +3027,7 @@ class TicketController extends Controller
                     Lang::get('lang.subject'),
                     Lang::get('lang.ticket_id'),
                     Lang::get('lang.priority'),
+                    Lang::get('lang.status'),
                     Lang::get('lang.from'),
                     Lang::get('lang.assigned_to'),
                     Lang::get('lang.last_activity'),
@@ -3029,6 +3051,7 @@ class TicketController extends Controller
                     Lang::get('lang.subject'),
                     Lang::get('lang.ticket_id'),
                     Lang::get('lang.priority'),
+                    Lang::get('lang.status'),
                     Lang::get('lang.from'),
                     Lang::get('lang.assigned_to'),
                     Lang::get('lang.last_activity'),
@@ -3052,6 +3075,7 @@ class TicketController extends Controller
                     Lang::get('lang.subject'),
                     Lang::get('lang.ticket_id'),
                     Lang::get('lang.priority'),
+                    Lang::get('lang.status'),
                     Lang::get('lang.from'),
                     Lang::get('lang.assigned_to'),
                     Lang::get('lang.last_activity'),
@@ -3095,6 +3119,7 @@ class TicketController extends Controller
                     Lang::get('lang.subject'),
                     Lang::get('lang.ticket_id'),
                     Lang::get('lang.priority'),
+                    Lang::get('lang.status'),
                     Lang::get('lang.from'),
                     Lang::get('lang.assigned_to'),
                     Lang::get('lang.last_activity'),
@@ -3118,6 +3143,7 @@ class TicketController extends Controller
                     Lang::get('lang.subject'),
                     Lang::get('lang.ticket_id'),
                     Lang::get('lang.priority'),
+                    Lang::get('lang.status'),
                     Lang::get('lang.from'),
                     Lang::get('lang.assigned_to'),
                     Lang::get('lang.last_activity'),
@@ -3141,6 +3167,7 @@ class TicketController extends Controller
                     Lang::get('lang.subject'),
                     Lang::get('lang.ticket_id'),
                     Lang::get('lang.priority'),
+                    Lang::get('lang.status'),
                     Lang::get('lang.from'),
                     Lang::get('lang.assigned_to'),
                     Lang::get('lang.last_activity'),
@@ -3164,6 +3191,7 @@ class TicketController extends Controller
                     Lang::get('lang.subject'),
                     Lang::get('lang.ticket_id'),
                     Lang::get('lang.priority'),
+                    Lang::get('lang.status'),
                     Lang::get('lang.from'),
                     Lang::get('lang.assigned_to'),
                     Lang::get('lang.last_activity'),
@@ -3256,6 +3284,24 @@ class TicketController extends Controller
 
                 return $prio;
             })
+            ->addColumn('status', function ($tickets) {
+                $statusName = $tickets->status_name ?? 'Unknown';
+                $statusId = $tickets->ticket_status ?? 0;
+
+                // Color mapping based on status IDs
+                $statusColors = [
+                    1 => '#3498db',  // Open - Blue
+                    2 => '#27ae60',  // Resolved - Green
+                    3 => '#6c757d',  // Closed - Gray
+                    4 => '#9b59b6',  // Archived - Purple
+                    5 => '#e74c3c',  // Deleted - Red
+                    6 => '#f39c12',  // Unverified - Orange
+                    7 => '#f1c40f',  // Request Approval - Yellow
+                ];
+                $statusColor = $statusColors[$statusId] ?? '#6c757d';
+
+                return '<span class="badge" style="background-color: '.$statusColor.'; color: #fff; padding: 5px 10px;">'.ucfirst($statusName).'</span>';
+            })
             ->addColumn('user_name', function ($tickets) {
                 $from = $tickets->first_name;
                 $url = route('user.show', $tickets->user_id);
@@ -3300,7 +3346,7 @@ class TicketController extends Controller
 
                     return '<span style="display:none">'.$updated.'</span>'.UTC::usertimezone($updated);
                 })
-                ->rawColumns(['id', 'title', 'ticket_number', 'priority', 'user_name', 'assign_user_name', 'updated_at', 'created_at'])
+                ->rawColumns(['id', 'title', 'ticket_number', 'priority', 'status', 'user_name', 'assign_user_name', 'updated_at', 'created_at'])
                 ->make();
     }
 }
