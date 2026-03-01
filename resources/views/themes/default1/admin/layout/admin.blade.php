@@ -510,6 +510,33 @@
                                 </ul>
                             </li>
 
+                            <li @yield('ips-menu-parent') class="nav-item">
+                                <a href="#" @yield('IPS') class="nav-link">
+                                    <i class="nav-icon fas fa-map-marker-alt"></i>
+                                    <p>IPS <i class="fas fa-angle-left right"></i></p>
+                                </a>
+                                <ul @yield('ips-menu-open') class="nav nav-treeview">
+                                    <li class="nav-item">
+                                        <a href="{{url('states')}}" @yield('states') class="nav-link">
+                                            <i class="nav-icon fas fa-flag"></i>
+                                            <p>Negeri</p>
+                                        </a>
+                                    </li>
+                                    <li class="nav-item">
+                                        <a href="{{url('districts')}}" @yield('districts-nav') class="nav-link">
+                                            <i class="nav-icon fas fa-map"></i>
+                                            <p>Daerah</p>
+                                        </a>
+                                    </li>
+                                    <li class="nav-item">
+                                        <a href="{{url('ips-types')}}" @yield('ips-types') class="nav-link">
+                                            <i class="nav-icon fas fa-building"></i>
+                                            <p>Jenis IPS</p>
+                                        </a>
+                                    </li>
+                                </ul>
+                            </li>
+
                             <li @yield('ticket-menu-parent') class="nav-item">
 
                                 <a href="#" @yield('Tickets') class="nav-link">
