@@ -27,6 +27,7 @@ use App\Model\helpdesk\Settings\System;
 use App\Model\helpdesk\Ticket\Ticket_attachments;
 use App\Model\helpdesk\Ticket\Ticket_Collaborator;
 use App\Model\helpdesk\Ticket\Ticket_Form_Data;
+use App\Model\helpdesk\Ticket\Ticket_Priority;
 use App\Model\helpdesk\Ticket\Ticket_source;
 use App\Model\helpdesk\Ticket\Ticket_Status;
 use App\Model\helpdesk\Ticket\Ticket_Thread;
@@ -503,24 +504,27 @@ class TicketController extends Controller
      */
     public function ticket_print($id)
     {
-        $tickets = Tickets::leftJoin('ticket_thread', function ($join) {
-            $join->on('tickets.id', '=', 'ticket_thread.ticket_id')
-                        ->whereNotNull('ticket_thread.title');
-        })
-                ->leftJoin('department', 'tickets.dept_id', '=', 'department.id')
-                ->leftJoin('help_topic', 'tickets.help_topic_id', '=', 'help_topic.id')
-                ->where('tickets.id', '=', $id)
-                ->select('ticket_thread.title', 'tickets.ticket_number', 'department.name as department', 'help_topic.topic as helptopic')
-                ->first();
         $ticket = Tickets::where('tickets.id', '=', $id)->first();
-        $html = view('themes.default1.agent.helpdesk.ticket.pdf', compact('id', 'ticket', 'tickets'))->render();
+        if (!$ticket) {
+            return redirect()->back()->with('fails', 'Ticket not found.');
+        }
+        $thread = Ticket_Thread::where('ticket_id', '=', $id)->whereNotNull('title')->first();
+        $department = $ticket->dept_id ? Department::where('id', '=', $ticket->dept_id)->first() : null;
+        $helptopic = $ticket->help_topic_id ? Help_topic::where('id', '=', $ticket->help_topic_id)->first() : null;
+        $priority = $ticket->priority_id ? Ticket_Priority::where('priority_id', '=', $ticket->priority_id)->first() : null;
+        $sla = $ticket->sla ? Sla_plan::where('id', '=', $ticket->sla)->first() : null;
+        $user = $ticket->user_id ? \App\User::where('id', '=', $ticket->user_id)->first() : null;
+        $assigned = $ticket->assigned_to ? \App\User::where('id', '=', $ticket->assigned_to)->first() : null;
+        $threads = Ticket_Thread::where('ticket_id', '=', $id)->orderBy('created_at', 'asc')->get();
+
+        $html = view('themes.default1.agent.helpdesk.ticket.pdf', compact('id', 'ticket', 'thread', 'department', 'helptopic', 'priority', 'sla', 'user', 'assigned', 'threads'))->render();
         $html1 = mb_convert_encoding($html, 'HTML-ENTITIES', 'UTF-8');
 
         $pdfOutput = PdfFacade::load($html1)->output(false);
 
         return response($pdfOutput, 200, [
             'Content-Type' => 'application/pdf',
-            'Content-Disposition' => 'inline; filename="ticket-'.$tickets->ticket_number.'.pdf"',
+            'Content-Disposition' => 'inline; filename="ticket-'.$ticket->ticket_number.'.pdf"',
         ]);
     }
 
