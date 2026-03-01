@@ -1251,6 +1251,9 @@ class TicketController extends Controller
         $current_dept = Department::where('id', '=', $ticket_status->dept_id)->first();
         if ($current_dept && $current_dept->resolve_dept_id) {
             $ticket_status->dept_id = $current_dept->resolve_dept_id;
+            if (Auth::user()->role != 'user') {
+                $ticket_status->assigned_to = Auth::user()->id;
+            }
             $ticket_status->save();
         }
         $ticket_status_message = Ticket_Status::where('id', '=', $ticket_status->status)->first();
