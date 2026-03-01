@@ -44,6 +44,9 @@ class ClientRequest extends Request
             'Details' => 'required',
             'mobile'  => 'numeric',
             'Phone'   => 'numeric',
+            'state'    => 'required',
+            'district' => 'required',
+            'ips_type' => 'required',
         ];
         $custom_rule = $this->getCustomRule();
         $rules = array_merge($current_rule, $custom_rule);
@@ -138,11 +141,17 @@ class ClientRequest extends Request
                     'Details' => 'required',
                     'mobile'  => 'required|numeric',
                     'Phone'   => 'numeric',
+                    'state'    => 'required',
+                    'district' => 'required',
+                    'ips_type' => 'required',
                 ];
             } else {
                 return [
                     'Subject' => 'required',
                     'Details' => 'required',
+                    'state'    => 'required',
+                    'district' => 'required',
+                    'ips_type' => 'required',
                 ];
             }
         } else {

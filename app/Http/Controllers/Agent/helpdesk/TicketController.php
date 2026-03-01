@@ -1024,6 +1024,17 @@ class TicketController extends Controller
 
         $ticket->priority_id = $priority;
         $ticket->source = $source;
+
+        // Extract IPS fields from form_data before they get stored as Ticket_Form_Data
+        if (is_array($form_data)) {
+            foreach (['state', 'district', 'ips_type'] as $field) {
+                if (isset($form_data[$field])) {
+                    $ticket->$field = $form_data[$field];
+                    unset($form_data[$field]);
+                }
+            }
+        }
+
         $ticket_status = $this->checkUserVerificationStatus();
         //dd($ticket_status);
         // if ($ticket_status == 0) {
