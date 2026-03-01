@@ -182,7 +182,7 @@ if ($thread->title != "") {
                     @endif
 
                     {{-- Close option: only show if ticket is Resolved (status = 2) --}}
-                    @if($tickets_approval->status == 2 && $group->can_edit_ticket == 1)
+                    @if($tickets_approval->status == 2)
                     <a href="#" id="close" class="dropdown-item"><i class="fas fa-check" style="color:green;"> </i> {!! Lang::get('lang.close') !!}</a>
                     @endif
 
