@@ -1085,11 +1085,12 @@ if ($thread->title != "") {
                                 $count_assign = count($assign);
                                 $teams = App\Model\helpdesk\Agent\Teams::where('status', '=', '1')->get();
                                 $count_teams = count($teams);
+                                $departments = App\Model\helpdesk\Agent\Department::pluck('name', 'id');
                                 ?>
-                               
+
                                 <optgroup label="Agents ( {!! $count_assign !!} )">
                                     @foreach($assign as $user)
-                                    <option  value="user_{{$user->id}}">{{$user->first_name." ".$user->last_name}}</option>
+                                    <option  value="user_{{$user->id}}">{{$user->first_name." ".$user->last_name}}{{ isset($departments[$user->primary_dpt]) ? ' ('.$departments[$user->primary_dpt].')' : '' }}</option>
                                     @endforeach
                                 </optgroup>
                             </select>

@@ -1093,8 +1093,10 @@ class UserController extends Controller
     public function getAgentDetails()
     {
         $users = User::where('role', '<>', 'user')->where('active', '=', 1)->orderBy('first_name')->get();
+        $departments = \App\Model\helpdesk\Agent\Department::pluck('name', 'id');
         foreach ($users as $user) {
-            echo "<option value='user_$user->id'>".$user->name().'</option>';
+            $dept_name = isset($departments[$user->primary_dpt]) ? ' ('.$departments[$user->primary_dpt].')' : '';
+            echo "<option value='user_$user->id'>".$user->name().$dept_name.'</option>';
         }
     }
 }
