@@ -516,13 +516,12 @@ class TicketController extends Controller
         $html = view('themes.default1.agent.helpdesk.ticket.pdf', compact('id', 'ticket', 'tickets'))->render();
         $html1 = mb_convert_encoding($html, 'HTML-ENTITIES', 'UTF-8');
 
-        /**
-         * This statement throws error with php7.1.
-         *
-         * @see https://github.com/dompdf/dompdf/issues/1272
-         * For time bieng we are silencing the error using "@" operator in front of it
-         */
-        return PdfFacade::load($html1)->show(false, false, false);
+        $pdfOutput = PdfFacade::load($html1)->output(false);
+
+        return response($pdfOutput, 200, [
+            'Content-Type' => 'application/pdf',
+            'Content-Disposition' => 'inline; filename="ticket-'.$tickets->ticket_number.'.pdf"',
+        ]);
     }
 
     /**
