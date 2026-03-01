@@ -76,6 +76,15 @@ class="active"
     @if($errors->first('mobile'))
     <li class="error-message-padding">{!! $errors->first('mobile', ':message') !!}</li>
     @endif
+    @if($errors->first('state'))
+    <li class="error-message-padding">{!! $errors->first('state', ':message') !!}</li>
+    @endif
+    @if($errors->first('district'))
+    <li class="error-message-padding">{!! $errors->first('district', ':message') !!}</li>
+    @endif
+    @if($errors->first('ips_type'))
+    <li class="error-message-padding">{!! $errors->first('ips_type', ':message') !!}</li>
+    @endif
 </div>
 @endif
 
@@ -193,7 +202,7 @@ class="active"
                                 <label>{!! Lang::get('lang.help_topic') !!}:</label>
                                 <!-- helptopic -->
                                 <?php $helptopic = App\Model\helpdesk\Manage\Help_topic::where('status', '=', 1)->select('topic', 'id')->get(); ?>
-                                {!! Form::select('helptopic', ['Helptopic'=>$helptopic->pluck('topic','id')->toArray()],null,['class' => 'form-control select','id'=>'selectid']) !!}
+                                {!! Form::select('helptopic', ['Helptopic'=>$helptopic->pluck('topic','id')->toArray()],null,['class' => 'form-control select','id'=>'helptopic_selectid']) !!}
                             </div>
                         </div>
                         <div class="col-md-3">
@@ -231,7 +240,51 @@ class="active"
         </div>
 
         <div class="card card-light">
-            
+
+            <div class="card-header">
+                <h3 class="card-title">Maklumat IPS:</h3>
+            </div>
+
+            <div class="card-body">
+                <div class="form-group">
+                    <div class="row">
+                        <div class="col-md-4">
+                            <div class="form-group {{ $errors->has('state') ? 'has-error' : '' }}">
+                                <label>Negeri <span class="text-red">*</span></label>
+                                <select name="state" id="state" class="form-control select">
+                                    <option value="">-- Pilih Negeri --</option>
+                                    @foreach(config('malaysia.states') as $stateName => $districts)
+                                        <option value="{{ $stateName }}" {{ old('state') == $stateName ? 'selected' : '' }}>{{ $stateName }}</option>
+                                    @endforeach
+                                </select>
+                            </div>
+                        </div>
+                        <div class="col-md-4">
+                            <div class="form-group {{ $errors->has('district') ? 'has-error' : '' }}">
+                                <label>Daerah <span class="text-red">*</span></label>
+                                <select name="district" id="district" class="form-control select">
+                                    <option value="">-- Pilih Daerah --</option>
+                                </select>
+                            </div>
+                        </div>
+                        <div class="col-md-4">
+                            <div class="form-group {{ $errors->has('ips_type') ? 'has-error' : '' }}">
+                                <label>Jenis IPS <span class="text-red">*</span></label>
+                                <select name="ips_type" id="ips_type" class="form-control select">
+                                    <option value="">-- Pilih Jenis IPS --</option>
+                                    <option value="Sekolah" {{ old('ips_type') == 'Sekolah' ? 'selected' : '' }}>Sekolah</option>
+                                    <option value="Tadika" {{ old('ips_type') == 'Tadika' ? 'selected' : '' }}>Tadika</option>
+                                    <option value="Pusat" {{ old('ips_type') == 'Pusat' ? 'selected' : '' }}>Pusat</option>
+                                </select>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <div class="card card-light">
+
             <div class="card-header">
                 <h3 class="card-title">{!! Lang::get('lang.ticket_detail') !!}:</h3>
             </div>
@@ -291,10 +344,10 @@ class="active"
 {!! Form::close() !!}
 <script type="text/javascript">
     $(document).ready(function () {
-        var helpTopic = $("#selectid").val();
+        var helpTopic = $("#helptopic_selectid").val();
         send(helpTopic);
-        $("#selectid").on("change", function () {
-            helpTopic = $("#selectid").val();
+        $("#helptopic_selectid").on("change", function () {
+            helpTopic = $("#helptopic_selectid").val();
             send(helpTopic);
         });
         function send(helpTopic) {
@@ -369,6 +422,27 @@ class="active"
                         }
                     });
                 });
+
+   // Cascading state → district dropdown
+   var malaysiaDistricts = @json(config('malaysia.states'));
+   $(document).ready(function() {
+       var oldDistrict = "{{ old('district') }}";
+       $('#state').on('change', function() {
+           var state = $(this).val();
+           var $district = $('#district');
+           $district.empty().append('<option value="">-- Pilih Daerah --</option>');
+           if (state && malaysiaDistricts[state]) {
+               $.each(malaysiaDistricts[state], function(i, name) {
+                   var selected = (name === oldDistrict) ? ' selected' : '';
+                   $district.append('<option value="' + name + '"' + selected + '>' + name + '</option>');
+               });
+           }
+       });
+       // Trigger on page load if state was pre-selected (old input)
+       if ($('#state').val()) {
+           $('#state').trigger('change');
+       }
+   });
 
    $(function () {
         var picker = $('#datemask').datetimepicker({

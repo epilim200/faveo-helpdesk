@@ -139,6 +139,11 @@ Route::middleware('web')->group(function () {
 
         Route::resource('sla', Admin\helpdesk\SlaController::class); // in SLA Plan module, for CRUD
 
+        Route::resource('states', Admin\helpdesk\StateController::class);
+        Route::get('districts/by-state/{stateId}', [Admin\helpdesk\DistrictController::class, 'byState'])->name('districts.by-state');
+        Route::resource('districts', Admin\helpdesk\DistrictController::class);
+        Route::resource('ips-types', Admin\helpdesk\IpsTypeController::class);
+
         Route::resource('forms', Admin\helpdesk\FormController::class);
         Route::get('forms/add-child/{formid}', [Admin\helpdesk\FormController::class, 'addChildForm'])->name('forms.add.child');
         Route::post('forms/field/{fieldid}/child', [Admin\helpdesk\FormController::class, 'addChild'])->name('forms.field.child');

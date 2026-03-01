@@ -41,18 +41,7 @@
             <button type="button" class="btn btn-default" id="Edit_Ticket" data-toggle="modal" data-target="#Edit"><i class="fa fa-edit" style="color:green;"> </i> Edit</button>
 
             <a href="{{url('ticket/print/'.$tickets->id)}}" target="_blank" class="btn btn-default"><i class="fa fa-print" style="color:blue;"> </i> Print</a>
-            <div class="btn-group">
-                <button type="button" class="btn btn-default dropdown-toggle" data-toggle="dropdown" id="d1"><i class="fa fa-exchange" style="color:teal;" id="hidespin"> </i><i class="fa fa-spinner fa-spin" style="color:teal; display:none;" id="spin"></i>
-                    Change Status <span class="caret"></span>
-                </button>
-                <ul class="dropdown-menu">
-                    <li id="open"><a href="#"><i class="fa fa-folder-open-o" style="color:red;"> </i>Open</a></li>
-
-                    <li id="close"><a href="#"><i class="fa fa-check" style="color:green;"> </i>Close</a></li>
-
-                    <li id="resolved"><a href="#"><i class="fa fa-check-circle-o " style="color:green;"> </i> Resolved</a></li>
-                </ul>
-            </div>
+            {{-- Change Status button hidden for public users --}}
 
             <div class="btn-group">
                 <button type="button" class="btn btn-default dropdown-toggle" data-toggle="dropdown" id="d2"><i class="fa fa-cogs" style="color:teal;"> </i>

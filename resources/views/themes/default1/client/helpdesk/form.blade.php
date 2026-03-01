@@ -221,6 +221,31 @@ class = "nav-item active"
                         @endif
                         @endif
                         
+                        <div class="col-md-4 form-group {{ $errors->has('state') ? 'has-error' : '' }}">
+                            {!! Form::label('state', 'Negeri') !!}<span class="text-red"> *</span>
+                            <select name="state" id="client_state" class="form-control">
+                                <option value="">-- Pilih Negeri --</option>
+                                @foreach(config('malaysia.states') as $stateName => $districts)
+                                    <option value="{{ $stateName }}" {{ old('state') == $stateName ? 'selected' : '' }}>{{ $stateName }}</option>
+                                @endforeach
+                            </select>
+                        </div>
+                        <div class="col-md-4 form-group {{ $errors->has('district') ? 'has-error' : '' }}">
+                            {!! Form::label('district', 'Daerah') !!}<span class="text-red"> *</span>
+                            <select name="district" id="client_district" class="form-control">
+                                <option value="">-- Pilih Daerah --</option>
+                            </select>
+                        </div>
+                        <div class="col-md-4 form-group {{ $errors->has('ips_type') ? 'has-error' : '' }}">
+                            {!! Form::label('ips_type', 'Jenis IPS') !!}<span class="text-red"> *</span>
+                            <select name="ips_type" id="client_ips_type" class="form-control">
+                                <option value="">-- Pilih Jenis IPS --</option>
+                                <option value="Sekolah" {{ old('ips_type') == 'Sekolah' ? 'selected' : '' }}>Sekolah</option>
+                                <option value="Tadika" {{ old('ips_type') == 'Tadika' ? 'selected' : '' }}>Tadika</option>
+                                <option value="Pusat" {{ old('ips_type') == 'Pusat' ? 'selected' : '' }}>Pusat</option>
+                            </select>
+                        </div>
+
                         <div class="col-md-12 form-group {{ $errors->has('Subject') ? 'has-error' : '' }}">
                             {!! Form::label('Subject',Lang::get('lang.subject')) !!}<span class="text-red"> *</span>
                             {!! Form::text('Subject',null,['class' => 'form-control']) !!}
@@ -275,6 +300,26 @@ $(document).ready(function(){
            }
        });
    }
+});
+
+// Cascading state → district dropdown
+var malaysiaDistricts = @json(config('malaysia.states'));
+$(document).ready(function() {
+    var oldDistrict = "{{ old('district') }}";
+    $('#client_state').on('change', function() {
+        var state = $(this).val();
+        var $district = $('#client_district');
+        $district.empty().append('<option value="">-- Pilih Daerah --</option>');
+        if (state && malaysiaDistricts[state]) {
+            $.each(malaysiaDistricts[state], function(i, name) {
+                var selected = (name === oldDistrict) ? ' selected' : '';
+                $district.append('<option value="' + name + '"' + selected + '>' + name + '</option>');
+            });
+        }
+    });
+    if ($('#client_state').val()) {
+        $('#client_state').trigger('change');
+    }
 });
 
 $(function() {

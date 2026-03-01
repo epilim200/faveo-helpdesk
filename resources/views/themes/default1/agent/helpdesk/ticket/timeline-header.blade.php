@@ -10,6 +10,16 @@
         Lang::get('lang.organization') => $LastResponse->getOrgWithLink(),   
     ];
     
+    if($TicketData->state){
+        $array['Negeri'] = $TicketData->state;
+    }
+    if($TicketData->district){
+        $array['Daerah'] = $TicketData->district;
+    }
+    if($TicketData->ips_type){
+        $array['Jenis IPS'] = $TicketData->ips_type;
+    }
+
     if($user->ban > 0){
         array_push($array, [Lang::get('lang.this_ticket_is_under_banned_user')=>'']);
     }

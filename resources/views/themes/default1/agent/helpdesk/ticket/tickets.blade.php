@@ -78,8 +78,6 @@ if (Request::has('assigned'))
 <style>
     .tooltip1 {
         position: relative;
-        /*display: inline-block;*/
-        /*border-bottom: 1px dotted black;*/
     }
 
     .tooltip1 .tooltiptext {
@@ -90,14 +88,48 @@ if (Request::has('assigned'))
         text-align: center;
         border-radius: 6px;
         padding: 5px 0;
-
-        /* Position the tooltip */
         position: absolute;
         z-index: 1;
     }
 
     .tooltip1:hover .tooltiptext {
         visibility: visible;
+    }
+
+    /* Filter Panel Styles */
+    .filter-panel {
+        background-color: #f8f9fa;
+        border: 1px solid #dee2e6;
+        border-radius: 4px;
+        margin-bottom: 15px;
+    }
+    .filter-panel .card-header {
+        background-color: #e9ecef;
+        cursor: pointer;
+        padding: 10px 15px;
+    }
+    .filter-panel .card-header:hover {
+        background-color: #dee2e6;
+    }
+    .filter-panel .card-body {
+        padding: 15px;
+    }
+    .filter-row {
+        margin-bottom: 10px;
+    }
+    .filter-row label {
+        font-weight: 600;
+        font-size: 12px;
+        color: #495057;
+        margin-bottom: 3px;
+    }
+    .filter-row .select2-container {
+        width: 100% !important;
+    }
+    .filter-actions {
+        margin-top: 15px;
+        padding-top: 15px;
+        border-top: 1px solid #dee2e6;
     }
 </style>
 @stop
@@ -138,6 +170,194 @@ if (Request::has('assigned'))
     </div><!-- /.box-header -->
 
     <div class="card-body ">
+        <!-- Filter Panel -->
+        <?php
+        $departments = \App\Model\helpdesk\Agent\Department::orderBy('name')->get();
+        $statuses = \App\Model\helpdesk\Ticket\Ticket_Status::orderBy('name')->get();
+        $priorities = \App\Model\helpdesk\Ticket\Ticket_Priority::orderBy('priority')->get();
+        $sources = \App\Model\helpdesk\Ticket\Ticket_source::orderBy('name')->get();
+        $agents = \App\User::whereIn('role', ['admin', 'agent'])->where('active', 1)->orderBy('first_name')->get();
+
+        // Labels table may not exist in all installations
+        try {
+            $labels = \App\Model\helpdesk\Filters\Label::where('status', 1)->orderBy('title')->get();
+        } catch (\Exception $e) {
+            $labels = collect([]);
+        }
+
+        $sla_plans = \App\Model\helpdesk\Manage\Sla_plan::where('status', 1)->orderBy('name')->get();
+        $help_topics = \App\Model\helpdesk\Manage\Help_topic::where('status', 1)->orderBy('topic')->get();
+
+        // Get current filter values from request
+        $current_filters = Request::all();
+        ?>
+        <div class="filter-panel card mb-3">
+            <div class="card-header" data-toggle="collapse" data-target="#filterCollapse" aria-expanded="false">
+                <i class="fas fa-filter"></i> <strong>{{Lang::get('lang.filters')}}</strong>
+                <i class="fas fa-chevron-down float-right" id="filter-chevron"></i>
+                @if(count($current_filters) > 1)
+                <span class="badge badge-info ml-2">{{ count($current_filters) - 1 }} {{Lang::get('lang.active')}}</span>
+                @endif
+            </div>
+            <div class="collapse" id="filterCollapse">
+                <div class="card-body">
+                    <form id="filter-form" method="GET" action="{{ url('tickets') }}">
+                        <input type="hidden" name="show[]" value="{{ isset($current_filters['show']) ? $current_filters['show'][0] : 'inbox' }}">
+
+                        <div class="row">
+                            <!-- Department Filter -->
+                            <div class="col-md-3 filter-row">
+                                <label>{{Lang::get('lang.department')}}</label>
+                                <select name="departments[]" id="departments-filter" class="form-control select2-filter" multiple>
+                                    @foreach($departments as $dept)
+                                    <option value="{{ $dept->name }}" {{ (isset($current_filters['departments']) && in_array($dept->name, $current_filters['departments'])) ? 'selected' : '' }}>{{ $dept->name }}</option>
+                                    @endforeach
+                                </select>
+                            </div>
+
+                            <!-- Status Filter -->
+                            <div class="col-md-3 filter-row">
+                                <label>{{Lang::get('lang.status')}}</label>
+                                <select name="status[]" id="status-filter" class="form-control select2-filter" multiple>
+                                    @foreach($statuses as $status)
+                                    <option value="{{ $status->name }}" {{ (isset($current_filters['status']) && in_array($status->name, $current_filters['status'])) ? 'selected' : '' }}>{{ $status->name }}</option>
+                                    @endforeach
+                                </select>
+                            </div>
+
+                            <!-- Priority Filter -->
+                            <div class="col-md-3 filter-row">
+                                <label>{{Lang::get('lang.priority')}}</label>
+                                <select name="priority[]" id="priority-filter" class="form-control select2-filter" multiple>
+                                    @foreach($priorities as $priority)
+                                    <option value="{{ $priority->priority }}" {{ (isset($current_filters['priority']) && in_array($priority->priority, $current_filters['priority'])) ? 'selected' : '' }}>{{ $priority->priority }}</option>
+                                    @endforeach
+                                </select>
+                            </div>
+
+                            <!-- Source Filter -->
+                            <div class="col-md-3 filter-row">
+                                <label>{{Lang::get('lang.source')}}</label>
+                                <select name="source[]" id="source-filter" class="form-control select2-filter" multiple>
+                                    @foreach($sources as $source)
+                                    <option value="{{ $source->name }}" {{ (isset($current_filters['source']) && in_array($source->name, $current_filters['source'])) ? 'selected' : '' }}>{{ $source->name }}</option>
+                                    @endforeach
+                                </select>
+                            </div>
+                        </div>
+
+                        <div class="row mt-2">
+                            <!-- Assigned To Filter -->
+                            <div class="col-md-3 filter-row">
+                                <label>{{Lang::get('lang.assigned_to')}}</label>
+                                <select name="assigned-to[]" id="assigned-to-filter" class="form-control select2-filter" multiple>
+                                    @foreach($agents as $agent)
+                                    <option value="{{ $agent->first_name }} {{ $agent->last_name }}" {{ (isset($current_filters['assigned-to']) && in_array($agent->first_name.' '.$agent->last_name, $current_filters['assigned-to'])) ? 'selected' : '' }}>{{ $agent->first_name }} {{ $agent->last_name }}</option>
+                                    @endforeach
+                                </select>
+                            </div>
+
+                            <!-- SLA Filter -->
+                            <div class="col-md-3 filter-row">
+                                <label>{{Lang::get('lang.sla_plan')}}</label>
+                                <select name="sla[]" id="sla-filter" class="form-control select2-filter" multiple>
+                                    @foreach($sla_plans as $sla)
+                                    <option value="{{ $sla->name }}" {{ (isset($current_filters['sla']) && in_array($sla->name, $current_filters['sla'])) ? 'selected' : '' }}>{{ $sla->name }}</option>
+                                    @endforeach
+                                </select>
+                            </div>
+
+                            <!-- Help Topic Filter -->
+                            <div class="col-md-3 filter-row">
+                                <label>{{Lang::get('lang.help_topic')}}</label>
+                                <select name="help-topic[]" id="help-topic-filter" class="form-control select2-filter" multiple>
+                                    @foreach($help_topics as $topic)
+                                    <option value="{{ $topic->topic }}" {{ (isset($current_filters['help-topic']) && in_array($topic->topic, $current_filters['help-topic'])) ? 'selected' : '' }}>{{ $topic->topic }}</option>
+                                    @endforeach
+                                </select>
+                            </div>
+
+                            <!-- Labels Filter (only if labels exist) -->
+                            @if($labels->count() > 0)
+                            <div class="col-md-3 filter-row">
+                                <label>{{Lang::get('lang.labels')}}</label>
+                                <select name="labels[]" id="labels-filter" class="form-control select2-filter" multiple>
+                                    @foreach($labels as $label)
+                                    <option value="{{ $label->title }}" {{ (isset($current_filters['labels']) && in_array($label->title, $current_filters['labels'])) ? 'selected' : '' }}>{{ $label->title }}</option>
+                                    @endforeach
+                                </select>
+                            </div>
+                            @endif
+                        </div>
+
+                        <div class="row mt-2">
+                            <!-- Created Date Filter -->
+                            <div class="col-md-3 filter-row">
+                                <label>{{Lang::get('lang.created')}}</label>
+                                <select name="created[]" id="created-filter" class="form-control select2-filter">
+                                    <option value="">-- {{Lang::get('lang.any-time')}} --</option>
+                                    <option value="today" {{ (isset($current_filters['created']) && in_array('today', $current_filters['created'])) ? 'selected' : '' }}>{{Lang::get('lang.today')}}</option>
+                                    <option value="yesterday" {{ (isset($current_filters['created']) && in_array('yesterday', $current_filters['created'])) ? 'selected' : '' }}>{{Lang::get('lang.yesterday')}}</option>
+                                    <option value="this-week" {{ (isset($current_filters['created']) && in_array('this-week', $current_filters['created'])) ? 'selected' : '' }}>{{Lang::get('lang.this-week')}}</option>
+                                    <option value="last-week" {{ (isset($current_filters['created']) && in_array('last-week', $current_filters['created'])) ? 'selected' : '' }}>{{Lang::get('lang.last-week')}}</option>
+                                    <option value="this-month" {{ (isset($current_filters['created']) && in_array('this-month', $current_filters['created'])) ? 'selected' : '' }}>{{Lang::get('lang.this-month')}}</option>
+                                    <option value="last-month" {{ (isset($current_filters['created']) && in_array('last-month', $current_filters['created'])) ? 'selected' : '' }}>{{Lang::get('lang.last-month')}}</option>
+                                    <option value="last-3-months" {{ (isset($current_filters['created']) && in_array('last-3-months', $current_filters['created'])) ? 'selected' : '' }}>{{Lang::get('lang.last-3-months')}}</option>
+                                    <option value="last-6-months" {{ (isset($current_filters['created']) && in_array('last-6-months', $current_filters['created'])) ? 'selected' : '' }}>{{Lang::get('lang.last-6-months')}}</option>
+                                    <option value="last-year" {{ (isset($current_filters['created']) && in_array('last-year', $current_filters['created'])) ? 'selected' : '' }}>{{Lang::get('lang.last-year')}}</option>
+                                </select>
+                            </div>
+
+                            <!-- Updated Date Filter -->
+                            <div class="col-md-3 filter-row">
+                                <label>{{Lang::get('lang.updated')}}</label>
+                                <select name="updated[]" id="updated-filter" class="form-control select2-filter">
+                                    <option value="">-- {{Lang::get('lang.any-time')}} --</option>
+                                    <option value="today" {{ (isset($current_filters['updated']) && in_array('today', $current_filters['updated'])) ? 'selected' : '' }}>{{Lang::get('lang.today')}}</option>
+                                    <option value="yesterday" {{ (isset($current_filters['updated']) && in_array('yesterday', $current_filters['updated'])) ? 'selected' : '' }}>{{Lang::get('lang.yesterday')}}</option>
+                                    <option value="this-week" {{ (isset($current_filters['updated']) && in_array('this-week', $current_filters['updated'])) ? 'selected' : '' }}>{{Lang::get('lang.this-week')}}</option>
+                                    <option value="last-week" {{ (isset($current_filters['updated']) && in_array('last-week', $current_filters['updated'])) ? 'selected' : '' }}>{{Lang::get('lang.last-week')}}</option>
+                                    <option value="this-month" {{ (isset($current_filters['updated']) && in_array('this-month', $current_filters['updated'])) ? 'selected' : '' }}>{{Lang::get('lang.this-month')}}</option>
+                                    <option value="last-month" {{ (isset($current_filters['updated']) && in_array('last-month', $current_filters['updated'])) ? 'selected' : '' }}>{{Lang::get('lang.last-month')}}</option>
+                                </select>
+                            </div>
+
+                            <!-- Assigned Status Filter -->
+                            <div class="col-md-3 filter-row">
+                                <label>{{Lang::get('lang.assigned')}}</label>
+                                <select name="assigned[]" id="assigned-filter" class="form-control select2-filter">
+                                    <option value="">-- {{Lang::get('lang.all')}} --</option>
+                                    <option value="1" {{ (isset($current_filters['assigned']) && in_array('1', $current_filters['assigned'])) ? 'selected' : '' }}>{{Lang::get('lang.assigned')}}</option>
+                                    <option value="0" {{ (isset($current_filters['assigned']) && in_array('0', $current_filters['assigned'])) ? 'selected' : '' }}>{{Lang::get('lang.unassigned')}}</option>
+                                </select>
+                            </div>
+
+                            <!-- Last Response By Filter -->
+                            <div class="col-md-3 filter-row">
+                                <label>{{Lang::get('lang.last_response')}}</label>
+                                <select name="last-response-by[]" id="response-filter" class="form-control select2-filter">
+                                    <option value="">-- {{Lang::get('lang.all')}} --</option>
+                                    <option value="Agent" {{ (isset($current_filters['last-response-by']) && in_array('Agent', $current_filters['last-response-by'])) ? 'selected' : '' }}>{{Lang::get('lang.agent')}}</option>
+                                    <option value="Client" {{ (isset($current_filters['last-response-by']) && in_array('Client', $current_filters['last-response-by'])) ? 'selected' : '' }}>{{Lang::get('lang.client')}}</option>
+                                </select>
+                            </div>
+                        </div>
+
+                        <!-- Filter Actions -->
+                        <div class="filter-actions">
+                            <button type="submit" class="btn btn-primary btn-sm">
+                                <i class="fas fa-search"></i> {{Lang::get('lang.apply_filter')}}
+                            </button>
+                            <a href="{{ url('tickets') }}" class="btn btn-secondary btn-sm">
+                                <i class="fas fa-times"></i> {{Lang::get('lang.reset')}}
+                            </a>
+                        </div>
+                    </form>
+                </div>
+            </div>
+        </div>
+        <!-- End Filter Panel -->
+
         @if(Session::has('success'))
         <div class="alert alert-success alert-dismissable">
             <i class="fas fa-check-circle"> </i>
@@ -228,198 +448,35 @@ if (Request::has('assigned'))
 {!! $table->script('vendor.Chumper.tickets-javascript') !!}
 @include('themes.default1.agent.helpdesk.ticket.more.tickets-options-script')
 <script>
-    $(document).ready(function () { /// Wait till page is loaded
-            var date_options = '<option value="any-time">{{Lang::get("lang.any-time")}}</option><option value="5-minutes">{{Lang::get("lang.5-minutes")}}</option><option value="10-minutes">{{Lang::get("lang.10-minutes")}}</option><option value="15-minutes">{{Lang::get("lang.15-minutes")}}</option><option value="30-minutes">{{Lang::get("lang.30-minutes")}}</option><option value="1-hour">{{Lang::get("lang.1-hour")}}</option><option value="4-hours">{{Lang::get("lang.4-hours")}}</option><option value="8-hours">{{Lang::get("lang.8-hours")}}</option><option value="12-hours">{{Lang::get("lang.12-hours")}}</option><option value="24-hours">{{Lang::get("lang.24-hours")}}</option><option value="today">{{Lang::get("lang.today")}}</option><option value="yesterday">{{Lang::get("lang.yesterday")}}</option><option value="this-week">{{Lang::get("lang.this-week")}}</option><option value="last-week">{{Lang::get("lang.last-week")}}</option><option value="15-days">{{Lang::get("lang.15-days")}}</option><option value="30-days">{{Lang::get("lang.30-days")}}</option><option value="this-month">{{Lang::get("lang.this-month")}}</option><option value="last-month">{{Lang::get("lang.last-month")}}</option><option value="last-2-months">{{Lang::get("lang.last-2-months")}}</option><option value="last-3-months">{{Lang::get("lang.last-3-months")}}</option><option value="last-6-months">{{Lang::get("lang.last-6-months")}}</option><option value="last-year">{{Lang::get("lang.last-year")}}</option>';
-            $('#modified, #created').append(date_options);
-            $('#modified, #created').trigger("change");
-            var create_dropdown = $("#created").select2({maximumSelectionLength : 1});
-            valueSelected(create_dropdown);
-            var update_dropdown = $("#modified").select2({maximumSelectionLength : 1});
-            valueSelected(update_dropdown);
-            var due_dropdown = $("#due-on-filter").select2({maximumSelectionLength : 1});
-            valueSelected(due_dropdown);
-            var assign_dropdown = $("#assigned-filter").select2({maximumSelectionLength : 1});
-            valueSelected(assign_dropdown);
-            var response_dropdown = $('#response-filter').select2({maximumSelectionLength : 1});
-            valueSelected(response_dropdown);
-            $('.select2-selection').css('border-radius', '0px');
-            $('.select2-selection').css('border-color', '#D2D6DE')
-            $('.select2-container').children().css('border-radius', '0px');
-            @if (array_key_exists('assigned', $inputs))
-            assign_dropdown.val(JSON.parse('<?= json_encode($inputs["assigned"]) ?>')).trigger("change");
-            if (JSON.parse('<?= json_encode($inputs["assigned"]) ?>') == '1' || JSON.parse('<?= json_encode($inputs["assigned"]) ?>') == 1) {
-    }
-    @endif
+    $(document).ready(function () {
+        // Initialize Select2 for all filter dropdowns
+        $('.select2-filter').select2({
+            placeholder: '-- {{Lang::get("lang.select")}} --',
+            allowClear: true,
+            width: '100%'
+        });
 
-            @if (array_key_exists('created', $inputs))
-            create_dropdown.val(JSON.parse('<?= json_encode($inputs["created"]) ?>')).trigger("change");
-            @endif
+        // Toggle chevron icon on collapse
+        $('#filterCollapse').on('show.bs.collapse', function () {
+            $('#filter-chevron').removeClass('fa-chevron-down').addClass('fa-chevron-up');
+        });
+        $('#filterCollapse').on('hide.bs.collapse', function () {
+            $('#filter-chevron').removeClass('fa-chevron-up').addClass('fa-chevron-down');
+        });
 
-            @if (array_key_exists('updated', $inputs))
-            update_dropdown.val(JSON.parse('<?= json_encode($inputs["updated"]) ?>')).trigger("change");
-            @endif
+        // Auto-expand filter panel if filters are active
+        @if(count($current_filters) > 1)
+        $('#filterCollapse').collapse('show');
+        @endif
 
-            @if (array_key_exists('due-on', $inputs))
-            due_dropdown.val(JSON.parse('<?= json_encode($inputs["due-on"]) ?>')).trigger("change");
-            @endif
-
-            @if (array_key_exists('last-response-by', $inputs))
-            response_dropdown.val(JSON.parse('<?= json_encode($inputs["last-response-by"]) ?>')).trigger("change");
-            @endif
-
-            $('#resetFilter').on("click", function (){
-    $('.filter, #assigned-to-filter, #departments-filter, #sla-filter, #priority-filter, #source-filter').val(null).trigger("change");
-            clearlist += 1;
-            clearfilterlist();
-    });
-    });
-
-    function showhidefilter()
-    {
-    if (filterClick == 0) {
-    $('#filterBox').css('display', 'block');
-            filterClick += 1;
-    } else {
-    $('#filterBox').css('display', 'none');
-            filterClick = 0;
-    }
-    }
-
-    function removeEmptyValues()
-    {
-    $(':input[value=""]').attr('disabled', true);
-    }
-
-</script>
-@include('themes.default1.agent.helpdesk.selectlists.selectlistjavascript')
-<script type="text/javascript">
-    var $dept_list = $("#departments-filter").addSelectlist({maximumSelectionLength : 5});
-            valueSelected($dept_list);
-            @if (array_key_exists('departments', $inputs))
-            addFilters($dept_list, '<?= json_encode($inputs["departments"]) ?>');
-            @endif
-
-            var $sla_list = $("#sla-filter").addSelectlist({maximumSelectionLength : 5});
-            valueSelected($sla_list);
-            @if (array_key_exists('sla', $inputs))
-            addFilters($sla_list, '<?= json_encode($inputs["sla"]) ?>');
-            @endif
-
-            var $priority_list = $("#priority-filter").addSelectlist({maximumSelectionLength : 5});
-            valueSelected($priority_list);
-            @if (array_key_exists('priority', $inputs))
-            addFilters($priority_list, '<?= json_encode($inputs["priority"]) ?>');
-            @endif
-
-            var $labels_list = $("#labels-filter").addSelectlist({maximumSelectionLength : 5});
-            valueSelected($labels_list);
-            @if (array_key_exists('labels', $inputs))
-            addFilters($labels_list, '<?= json_encode($inputs["labels"]) ?>');
-            @endif
-
-            var $tags_list = $("#tags-filter").addSelectlist({maximumSelectionLength : 5});
-            valueSelected($tags_list);
-            @if (array_key_exists('tags', $inputs))
-            addFilters($tags_list, '<?= json_encode($inputs["tags"]) ?>');
-            @endif
-
-            var $owner_list = $("#owner-filter").addSelectlist({maximumSelectionLength : 5});
-            valueSelected($owner_list);
-            @if (array_key_exists('created-by', $inputs))
-            @endif
-
-            // var select_assigen_list = $("#select-assign-agent").addSelectlist({maximumSelectionLength : 1});
-            // valueSelected(select_assigen_list);
-            var $assignee_list = $("#assigned-to-filter").addSelectlist({maximumSelectionLength : 5});
-            valueSelected($assignee_list);
-            @if (array_key_exists('assigned-to', $inputs))
-            @endif
-
-            var $status_list = $("#status-filter").addSelectlist({maximumSelectionLength : 5});
-            valueSelected($status_list);
-            @if (array_key_exists('status', $inputs))
-            addFilters($status_list, '<?= json_encode($inputs["status"]) ?>');
-            @endif
-
-            var $source_list = $("#source-filter").addSelectlist({maximumSelectionLength : 5});
-            valueSelected($source_list);
-            @if (array_key_exists('source', $inputs))
-            addFilters($source_list, '<?= json_encode($inputs["source"]) ?>');
-            @endif
-
-            var $type_list = $("#type-filter").addSelectlist({maximumSelectionLength : 5});
-            valueSelected($type_list);
-            @if (array_key_exists('types', $inputs))
-            addFilters($type_list, '<?= json_encode($inputs["types"]) ?>');
-            @endif
-
-            var $number_list = $("#ticket-number").addSelectlist({maximumSelectionLength : 5});
-            valueSelected($number_list);
-            @if (array_key_exists('ticket-number', $inputs))
-            var input = JSON.parse('<?= json_encode($inputs["ticket-number"]) ?>');
-            var $request = $.ajax({
-            url: "{{URL::route('get-filtered-ticket-numbers')}}",
-                    dataType: 'html',
-                    data: {name:input},
-                    type: "GET",
+        // Remove empty values before form submission
+        $('#filter-form').on('submit', function() {
+            $(this).find('select').each(function() {
+                if ($(this).val() === '' || $(this).val() === null || (Array.isArray($(this).val()) && $(this).val().length === 0)) {
+                    $(this).prop('disabled', true);
+                }
             });
-            $request.then(function (data) {
-            data = JSON.parse(data);
-                    // This assumes that the data comes back as an array of data objects
-                    // The idea is that you are using the same callback as the old `initSelection`
-                    for (var d = 0; d < data.length; d++) {
-            var item = data[d];
-                    // Create the DOM option that is pre-selected by default
-                    var option = new Option(item.text, item.id, true, true);
-                    // Append it to the select
-                    $number_list.append(option);
-            }
-            // Update the selected options that are displayed
-            $number_list.trigger('change');
-            });
-            @endif
-
-            var $help_topic_list = $('#help-topic-filter').addSelectlist({maximumSelectionLength : 5});
-            valueSelected($help_topic_list);
-            @if (array_key_exists('help-topic', $inputs))
-            addFilters($help_topic_list, '<?= json_encode($inputs["help-topic"]) ?>');
-            @endif
-
-            function addFilters($element, $data){
-            var obj = JSON.parse($data);
-                    if (obj.length > 0) {
-            for (var d = 0; d < obj.length; d++) {
-            var option = new Option(obj[d], obj[d], true, true);
-                    $element.append(option);
-            }
-            $element.trigger('change');
-            }
-            }
-
-    function clearfilterlist() {
-    $dept_list.val(null).trigger("change");
-            $sla_list.val(null).trigger("change");
-            $priority_list.val(null).trigger("change");
-            $source_list.val(null).trigger("change");
-            $owner_list.val(null).trigger("change");
-            $status_list.val(null).trigger("change");
-            $assignee_list.val(null).trigger("change");
-            $labels_list.val(null).trigger("change");
-            $tags_list.val(null).trigger("change");
-            $type_list.val(null).trigger("change");
-            $number_list.val(null).trigger("change");
-            $help_topic_list.val(null).trigger("change");
-    }
-
-    function valueSelected($obj) {
-    $obj.on("select2:select", function (e) { clearlist = 0; });
-    }
-
-    $('#filter-form').on('submit', function(e){
-    if (clearlist > 0) {
-    $('#departments-filter, #sla-filter, #priority-filter, #source-filter, #owner-filter, #status-filter, #assigned-filter, #assigned-to-filter, #labels-filter, #tags-filter, #type-filter, #due-on-filter, #created, #modified, #ticket-number, #help-topic-filter').remove();
-            $(this).children();
-    }
+        });
     });
 </script>
 @stop

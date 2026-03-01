@@ -53,19 +53,7 @@ class="active"
                                 <button type="button" class="btn btn-default"><i class="fa fa-print" style="color:blue;"> </i> {!! link_to_route('ticket.print','Print',[$tickets->id]) !!}</button>
                       
                                 <!-- </div> -->
-                                <div class="btn-group"> 
-                                    <button type="button" class="btn btn-default dropdown-toggle" data-toggle="dropdown"><i class="fa fa-exchange" style="color:teal;"> </i> 
-                                        Change Status <span class="caret"></span>
-                                    </button>
-                                    <ul class="dropdown-menu">
-                                    
-                                        <li><a href="#" id="open"><i class="fa fa-folder-open-o" style="color:yellow;"> </i>Open</a></li>
-                                    
-                                        <li><a href="#" id="close"><i class="fa fa-check" style="color:green;"> </i>Close</a></li>
-                                    
-                                        <li><a href="#" id="resolved"><i class="fa fa-check-circle-o " style="color:green;"> </i> Resolved</a></li>
-                                    </ul>
-                                </div>
+                                {{-- Change Status button hidden for public users --}}
                                 
                                 {!! Form::close() !!}
                             </div>

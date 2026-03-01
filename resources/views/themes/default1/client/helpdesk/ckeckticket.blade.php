@@ -81,37 +81,7 @@ $thread = App\Model\helpdesk\Ticket\Ticket_Thread::where('ticket_id', '=', \Cryp
 
                 <div class="col-sm-3 text-right">
 
-                    @if( $common_setting->status == '1')
-
-                    <div>
-
-                        <button class="btn btn-light dropdown-toggle" type="button" id="dropdownMenuButton" data-bs-toggle="dropdown" aria-expanded="false" style="background-color: whitesmoke">
-
-                            <i class="fas fa-exchange-alt" style="color:teal;"> </i>
-
-                            {!! Lang::get('lang.change_status') !!}
-
-                            <span class="caret"></span>
-                        </button>
-
-                        <?php $statuses = \App\Model\helpdesk\Ticket\Ticket_Status::all(); ?>
-
-                        <div class="dropdown-menu">
-
-                            <a class="dropdown-item" href="#" id="open">
-                                <i class="fas fa-folder-open" style="color:#FFD600;"> </i> {!! Lang::get('lang.open') !!}
-                            </a>
-
-                            <a class="dropdown-item" href="#" id="close">
-                                <i class="fas fa-check" style="color:#15F109;"> </i> {!! Lang::get('lang.close') !!}
-                            </a>
-
-                            <a class="dropdown-item" href="#" id="resolved">
-                                <i class="fas fa-check-circle " style="color:#0EF1BE;"> </i> {!! Lang::get('lang.resolved') !!}
-                            </a>
-                        </div>
-                    </div>
-                    @endif
+                    {{-- Change Status button hidden for public users --}}
                 {!! Form::close() !!}
                 </div>
             </div>
