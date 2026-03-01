@@ -50,11 +50,14 @@
                 <span class="widgetitemtitle">{!! Lang::get('lang.my_tickets') !!}</span>
             </a>
         </span>
+        <?php $kb = App\Model\helpdesk\Settings\CommonSettings::where('option_name', '=', 'knowledge_base')->first(); ?>
+        @if($kb && $kb->status == 1)
         <span onclick="javascript: window.location.href='{{url('/knowledgebase')}}';">
             <a href="{{url('/knowledgebase')}}" class="widgetrowitem defaultwidget" style="background-image:url({{ URL::asset('lb-faveo/media/images/knowledgebase.png') }})">
                 <span class="widgetitemtitle">{!! Lang::get('lang.knowledge_base') !!}</span>
             </a>
         </span>
+        @endif
     </div>
 </div>
 
