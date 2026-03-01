@@ -1247,6 +1247,12 @@ class TicketController extends Controller
         $ticket_status->closed = 1;
         $ticket_status->closed_at = date('Y-m-d H:i:s');
         $ticket_status->save();
+        // Auto-assign department semasa resolve
+        $current_dept = Department::where('id', '=', $ticket_status->dept_id)->first();
+        if ($current_dept && $current_dept->resolve_dept_id) {
+            $ticket_status->dept_id = $current_dept->resolve_dept_id;
+            $ticket_status->save();
+        }
         $ticket_status_message = Ticket_Status::where('id', '=', $ticket_status->status)->first();
         $thread = new Ticket_Thread();
         $thread->ticket_id = $ticket_status->id;

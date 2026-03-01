@@ -101,6 +101,16 @@ class="nav-link active"
                 {!! Form::label('outgoing_email',Lang::get('lang.outgoing_email')) !!}
                 {!!Form::select('outgoing_email', ['' => Lang::get('lang.system_default'), Lang::get('lang.emails')=>$emails->pluck('email_name','id')->toArray()],null,['class' => 'form-control select']) !!}
             </div>
+            <!-- department semasa resolve -->
+            <div class="col-sm-6 form-group">
+                {!! Form::label('resolve_dept_id','Department Semasa Resolve') !!}
+                <select name="resolve_dept_id" class="form-control select">
+                    <option value="">-- Tiada --</option>
+                    @foreach($departments as $dept)
+                        <option value="{{ $dept->id }}">{{ $dept->name }}</option>
+                    @endforeach
+                </select>
+            </div>
         </div>
         <div>
             <input type="checkbox" name="sys_department"> {{ Lang::get('lang.make-default-department')}}

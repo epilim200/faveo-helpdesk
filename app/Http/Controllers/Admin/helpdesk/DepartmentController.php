@@ -84,8 +84,9 @@ class DepartmentController extends Controller
             $templates = $template->get();
             $department = $department->get();
             $groups = $group->pluck('id', 'name');
+            $departments = $department;
 
-            return view('themes.default1.admin.helpdesk.agent.departments.create', compact('department', 'templates', 'slas', 'user', 'emails', 'groups'));
+            return view('themes.default1.admin.helpdesk.agent.departments.create', compact('department', 'templates', 'slas', 'user', 'emails', 'groups', 'departments'));
         } catch (Exception $e) {
             return redirect()->back()->with('fails', $e->getMessage());
         }
@@ -102,7 +103,7 @@ class DepartmentController extends Controller
     public function store(Department $department, DepartmentRequest $request)
     {
         try {
-            $department->fill($request->except('group_id', 'manager', 'sla'))->save();
+            $department->fill($request->except('group_id', 'manager', 'sla', 'resolve_dept_id'))->save();
             if ($request->sla) {
                 $department->sla = $request->input('sla');
             } else {
@@ -115,6 +116,7 @@ class DepartmentController extends Controller
             } else {
                 $department->manager = null;
             }
+            $department->resolve_dept_id = $request->input('resolve_dept_id') ?: null;
             /* Succes And Failure condition */
             /*  Check Whether the function Success or Fail */
             if ($department->save() == true) {
@@ -165,8 +167,9 @@ class DepartmentController extends Controller
             $departments = $department->whereId($id)->first();
             //$groups = $group->pluck('id', 'name');
             $assign = $group_assign_department->where('department_id', $id)->pluck('group_id');
+            $all_departments = $department->where('id', '!=', $id)->get();
 
-            return view('themes.default1.admin.helpdesk.agent.departments.edit', compact('assign', 'team', 'templates', 'departments', 'slas', 'user', 'emails', 'sys_department'));
+            return view('themes.default1.admin.helpdesk.agent.departments.edit', compact('assign', 'team', 'templates', 'departments', 'slas', 'user', 'emails', 'sys_department', 'all_departments'));
         } catch (Exception $e) {
             return redirect('departments')->with('fails', $e->getMessage());
         }
@@ -212,7 +215,9 @@ class DepartmentController extends Controller
                         ->where('id', 1)
                         ->update(['department' => $id]);
             }
-            if ($departments->fill($request->except('group_access', 'manager', 'sla'))->save()) {
+            $departments->resolve_dept_id = $request->input('resolve_dept_id') ?: null;
+            $departments->save();
+            if ($departments->fill($request->except('group_access', 'manager', 'sla', 'resolve_dept_id'))->save()) {
                 return redirect('departments')->with('success', Lang::get('lang.department_updated_sucessfully'));
             } else {
                 return redirect('departments')->with('fails', Lang::get('lang.department_not_updated'));
