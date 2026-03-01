@@ -258,6 +258,7 @@ Route::middleware('web')->group(function () {
 
         Route::post('workflow/update/{id}', [Admin\helpdesk\WorkflowController::class, 'update'])->name('workflow.update');
         Route::get('workflow/action-rule/{id}', [Admin\helpdesk\WorkflowController::class, 'selectAction'])->name('workflow.dept');
+        Route::get('workflow/rule-value/{id}', [Admin\helpdesk\WorkflowController::class, 'selectRuleValue'])->name('workflow.rule-value');
         Route::get('workflow/delete/{id}', [Admin\helpdesk\WorkflowController::class, 'destroy'])->name('workflow.delete');
         /*
          * Api Settings

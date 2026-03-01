@@ -42,7 +42,12 @@ class TicketWorkflowController extends Controller
      */
     public function workflow($fromaddress, $fromname, $subject, $body, $phone, $phonecode, $mobile_number, $helptopic, $sla, $priority, $source, $collaborator, $dept, $assign, $team_assign, $ticket_status, $form_data, $auto_response)
     {
-        $contact_details = ['email' => $fromaddress, 'email_name' => $fromname, 'subject' => $subject, 'message' => $body];
+        $contact_details = [
+            'email' => $fromaddress, 'email_name' => $fromname, 'subject' => $subject, 'message' => $body,
+            'state' => is_array($form_data) && isset($form_data['state']) ? $form_data['state'] : '',
+            'district' => is_array($form_data) && isset($form_data['district']) ? $form_data['district'] : '',
+            'ips_type' => is_array($form_data) && isset($form_data['ips_type']) ? $form_data['ips_type'] : '',
+        ];
         $ticket_settings_details = ['help_topic' => $helptopic, 'sla' => $sla, 'priority' => $priority, 'source' => $source, 'dept' => $dept, 'assign' => $assign, 'team' => $team_assign, 'status' => $ticket_status, 'reject' => false];
         // get all the workflow common to the entire system which includes any type of ticket creation where the execution order of the workflow should be starting with ascending order
         $workflows = WorkflowName::where('target', '=', 'A-0')->where('status', '=', '1')->orderBy('order', 'asc')->get();
@@ -67,6 +72,18 @@ class TicketWorkflowController extends Controller
                         }
                     } elseif ($worklfow_rule->matching_scenario == 'message') {
                         if ($rule_condition = $this->checkRuleCondition($contact_details['message'], $worklfow_rule->matching_relation, $worklfow_rule->matching_value) == true) {
+                            $ticket_settings_details = $this->applyActionCondition($workflow->id, $ticket_settings_details);
+                        }
+                    } elseif ($worklfow_rule->matching_scenario == 'state') {
+                        if ($this->checkRuleCondition($contact_details['state'], $worklfow_rule->matching_relation, $worklfow_rule->matching_value) == true) {
+                            $ticket_settings_details = $this->applyActionCondition($workflow->id, $ticket_settings_details);
+                        }
+                    } elseif ($worklfow_rule->matching_scenario == 'district') {
+                        if ($this->checkRuleCondition($contact_details['district'], $worklfow_rule->matching_relation, $worklfow_rule->matching_value) == true) {
+                            $ticket_settings_details = $this->applyActionCondition($workflow->id, $ticket_settings_details);
+                        }
+                    } elseif ($worklfow_rule->matching_scenario == 'ips_type') {
+                        if ($this->checkRuleCondition($contact_details['ips_type'], $worklfow_rule->matching_relation, $worklfow_rule->matching_value) == true) {
                             $ticket_settings_details = $this->applyActionCondition($workflow->id, $ticket_settings_details);
                         }
                     }
@@ -96,6 +113,18 @@ class TicketWorkflowController extends Controller
                                 }
                             } elseif ($worklfow_rule->matching_scenario == 'message') {
                                 if ($this->checkRuleCondition($contact_details['message'], $worklfow_rule->matching_relation, $worklfow_rule->matching_value) == true) {
+                                    $ticket_settings_details = $this->applyActionCondition($workflows_web->id, $ticket_settings_details);
+                                }
+                            } elseif ($worklfow_rule->matching_scenario == 'state') {
+                                if ($this->checkRuleCondition($contact_details['state'], $worklfow_rule->matching_relation, $worklfow_rule->matching_value) == true) {
+                                    $ticket_settings_details = $this->applyActionCondition($workflows_web->id, $ticket_settings_details);
+                                }
+                            } elseif ($worklfow_rule->matching_scenario == 'district') {
+                                if ($this->checkRuleCondition($contact_details['district'], $worklfow_rule->matching_relation, $worklfow_rule->matching_value) == true) {
+                                    $ticket_settings_details = $this->applyActionCondition($workflows_web->id, $ticket_settings_details);
+                                }
+                            } elseif ($worklfow_rule->matching_scenario == 'ips_type') {
+                                if ($this->checkRuleCondition($contact_details['ips_type'], $worklfow_rule->matching_relation, $worklfow_rule->matching_value) == true) {
                                     $ticket_settings_details = $this->applyActionCondition($workflows_web->id, $ticket_settings_details);
                                 }
                             }
@@ -129,6 +158,18 @@ class TicketWorkflowController extends Controller
                                 if ($rule_condition = $this->checkRuleCondition($contact_details['message'], $worklfow_rule->matching_relation, $worklfow_rule->matching_value) == true) {
                                     $ticket_settings_details = $this->applyActionCondition($workflows_email->id, $ticket_settings_details);
                                 }
+                            } elseif ($worklfow_rule->matching_scenario == 'state') {
+                                if ($this->checkRuleCondition($contact_details['state'], $worklfow_rule->matching_relation, $worklfow_rule->matching_value) == true) {
+                                    $ticket_settings_details = $this->applyActionCondition($workflows_email->id, $ticket_settings_details);
+                                }
+                            } elseif ($worklfow_rule->matching_scenario == 'district') {
+                                if ($this->checkRuleCondition($contact_details['district'], $worklfow_rule->matching_relation, $worklfow_rule->matching_value) == true) {
+                                    $ticket_settings_details = $this->applyActionCondition($workflows_email->id, $ticket_settings_details);
+                                }
+                            } elseif ($worklfow_rule->matching_scenario == 'ips_type') {
+                                if ($this->checkRuleCondition($contact_details['ips_type'], $worklfow_rule->matching_relation, $worklfow_rule->matching_value) == true) {
+                                    $ticket_settings_details = $this->applyActionCondition($workflows_email->id, $ticket_settings_details);
+                                }
                             }
                         }
                     }
@@ -158,6 +199,18 @@ class TicketWorkflowController extends Controller
                                 }
                             } elseif ($worklfow_rule->matching_scenario == 'message') {
                                 if ($rule_condition = $this->checkRuleCondition($contact_details['message'], $worklfow_rule->matching_relation, $worklfow_rule->matching_value) == true) {
+                                    $ticket_settings_details = $this->applyActionCondition($workflows_api->id, $ticket_settings_details);
+                                }
+                            } elseif ($worklfow_rule->matching_scenario == 'state') {
+                                if ($this->checkRuleCondition($contact_details['state'], $worklfow_rule->matching_relation, $worklfow_rule->matching_value) == true) {
+                                    $ticket_settings_details = $this->applyActionCondition($workflows_api->id, $ticket_settings_details);
+                                }
+                            } elseif ($worklfow_rule->matching_scenario == 'district') {
+                                if ($this->checkRuleCondition($contact_details['district'], $worklfow_rule->matching_relation, $worklfow_rule->matching_value) == true) {
+                                    $ticket_settings_details = $this->applyActionCondition($workflows_api->id, $ticket_settings_details);
+                                }
+                            } elseif ($worklfow_rule->matching_scenario == 'ips_type') {
+                                if ($this->checkRuleCondition($contact_details['ips_type'], $worklfow_rule->matching_relation, $worklfow_rule->matching_value) == true) {
                                     $ticket_settings_details = $this->applyActionCondition($workflows_api->id, $ticket_settings_details);
                                 }
                             }

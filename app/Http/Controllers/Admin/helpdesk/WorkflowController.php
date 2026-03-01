@@ -451,4 +451,53 @@ class WorkflowController extends Controller
 
         return $var;
     }
+
+    /**
+     * function to return the appropriate input for rule value based on matching scenario.
+     *
+     * @param type                     $id
+     * @param \Illuminate\Http\Request $request
+     *
+     * @return type string
+     */
+    public function selectRuleValue($id, Request $request)
+    {
+        $scenario = $request->scenario;
+        $states = config('malaysia.states');
+
+        if ($scenario == 'state') {
+            $var = "<select class='form-control' name='rule[".$id."][c]' required>";
+            $var .= "<option value=''>-- Pilih Negeri --</option>";
+            foreach (array_keys($states) as $state) {
+                $var .= "<option value='".e($state)."'>".e($state).'</option>';
+            }
+            $var .= '</select>';
+
+            return $var;
+        } elseif ($scenario == 'district') {
+            $var = "<select class='form-control' name='rule[".$id."][c]' required>";
+            $var .= "<option value=''>-- Pilih Daerah --</option>";
+            foreach ($states as $state => $districts) {
+                $var .= "<optgroup label='".e($state)."'>";
+                foreach ($districts as $district) {
+                    $var .= "<option value='".e($district)."'>".e($district).'</option>';
+                }
+                $var .= '</optgroup>';
+            }
+            $var .= '</select>';
+
+            return $var;
+        } elseif ($scenario == 'ips_type') {
+            $var = "<select class='form-control' name='rule[".$id."][c]' required>";
+            $var .= "<option value=''>-- Pilih Jenis IPS --</option>";
+            $var .= "<option value='Sekolah'>Sekolah</option>";
+            $var .= "<option value='Tadika'>Tadika</option>";
+            $var .= "<option value='Pusat'>Pusat</option>";
+            $var .= '</select>';
+
+            return $var;
+        } else {
+            return "<input class='form-control' type='text' name='rule[".$id."][c]' required>";
+        }
+    }
 }

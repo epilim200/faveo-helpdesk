@@ -166,7 +166,7 @@ class="nav-link active"
                             <?php $j++; ?>
                             <tr id="firstdata{!! $j !!}">
                                 <td>
-                                    <select class="form-control" name="rule[{!! $j-1 !!}][a]" required>
+                                    <select class="form-control" name="rule[{!! $j-1 !!}][a]" onchange="selectRuleValueInput({!! $j-1 !!}, this.value)" required>
                                         <option value="">-- {!! Lang::get('lang.select_one') !!} --</option>
                                         <option value="email" <?php
                                         if ($workflow_rule->matching_scenario == 'email') {
@@ -188,6 +188,9 @@ class="nav-link active"
                                             echo "selected='selected'";
                                         }
                                         ?> >{!! Lang::get('lang.message') !!}/{!! Lang::get('lang.body') !!}</option>
+                                        <option value="state" <?php if ($workflow_rule->matching_scenario == 'state') echo "selected='selected'"; ?> >Negeri</option>
+                                        <option value="district" <?php if ($workflow_rule->matching_scenario == 'district') echo "selected='selected'"; ?> >Daerah</option>
+                                        <option value="ips_type" <?php if ($workflow_rule->matching_scenario == 'ips_type') echo "selected='selected'"; ?> >Jenis IPS</option>
                                     </select>
                                 </td>
                                 <td>
@@ -235,8 +238,35 @@ class="nav-link active"
                                         ?> >Does not match Regular Expression</option>-->
                                     </select>
                                 </td>
-                                <td>
-                                    <input class="form-control" type="text" name="rule[{!! $j-1 !!}][c]" value="{!! $workflow_rule->matching_value !!}" required>
+                                <td id="rulevalue{!! $j-1 !!}">
+                                    @if($workflow_rule->matching_scenario == 'state')
+                                        <select class="form-control" name="rule[{!! $j-1 !!}][c]" required>
+                                            <option value="">-- Pilih Negeri --</option>
+                                            @foreach(array_keys(config('malaysia.states')) as $state)
+                                                <option value="{{ $state }}" {{ $workflow_rule->matching_value == $state ? "selected='selected'" : '' }}>{{ $state }}</option>
+                                            @endforeach
+                                        </select>
+                                    @elseif($workflow_rule->matching_scenario == 'district')
+                                        <select class="form-control" name="rule[{!! $j-1 !!}][c]" required>
+                                            <option value="">-- Pilih Daerah --</option>
+                                            @foreach(config('malaysia.states') as $state => $districts)
+                                                <optgroup label="{{ $state }}">
+                                                    @foreach($districts as $district)
+                                                        <option value="{{ $district }}" {{ $workflow_rule->matching_value == $district ? "selected='selected'" : '' }}>{{ $district }}</option>
+                                                    @endforeach
+                                                </optgroup>
+                                            @endforeach
+                                        </select>
+                                    @elseif($workflow_rule->matching_scenario == 'ips_type')
+                                        <select class="form-control" name="rule[{!! $j-1 !!}][c]" required>
+                                            <option value="">-- Pilih Jenis IPS --</option>
+                                            <option value="Sekolah" {{ $workflow_rule->matching_value == 'Sekolah' ? "selected='selected'" : '' }}>Sekolah</option>
+                                            <option value="Tadika" {{ $workflow_rule->matching_value == 'Tadika' ? "selected='selected'" : '' }}>Tadika</option>
+                                            <option value="Pusat" {{ $workflow_rule->matching_value == 'Pusat' ? "selected='selected'" : '' }}>Pusat</option>
+                                        </select>
+                                    @else
+                                        <input class="form-control" type="text" name="rule[{!! $j-1 !!}][c]" value="{!! $workflow_rule->matching_value !!}" required>
+                                    @endif
                                 </td>
                                 <td style="text-align: center">
                                     <div class="tools"> 
@@ -528,12 +558,15 @@ class="nav-link active"
     n++;
             $('.button1').append('<tr>' +
             '<td>' +
-            '<select class="form-control" name="rule[' + n + '][a]" required>' +
+            '<select class="form-control" name="rule[' + n + '][a]" onchange="selectRuleValueInput(' + n + ', this.value)" required>' +
             '<option>-- {!! Lang::get("lang.select_one") !!} --</option>' +
             '<option value="email">{!! Lang::get("lang.email") !!}</option>' +
             '<option value="email_name">{!! Lang::get("lang.email_name") !!}</option>' +
             '<option value="subject">{!! Lang::get("lang.subject") !!}</option>' +
             '<option value="message">{!! Lang::get("lang.message") !!}/{!! Lang::get("lang.body") !!}</option>' +
+            '<option value="state">Negeri</option>' +
+            '<option value="district">Daerah</option>' +
+            '<option value="ips_type">Jenis IPS</option>' +
             '</select>' +
             '</td>' +
             '<td>' +
@@ -547,7 +580,7 @@ class="nav-link active"
             '<option value="ends">{!! Lang::get("lang.ends_with") !!}</option>' +
             '</select>' +
             '</td>' +
-            '<td> <input class="form-control" type="text" name="rule[' + n + '][c]" required> </td>' +
+            '<td id="rulevalue' + n + '"> <input class="form-control" type="text" name="rule[' + n + '][c]" required> </td>' +
             '<td style="text-align: center">' +
             '<div class="tools"> <span class="btnRemove1" data-toggle="modal" data-target="#"><a data-toggle="tooltip" data-placement="top" title="Delete"><i class="fas fa-trash text-red"></i></a></span> </div>' +
             '</td>' +
@@ -574,6 +607,24 @@ class="nav-link active"
                             }
                     });
             }
+
+    function selectRuleValueInput(id, scenario) {
+        if (scenario == 'state' || scenario == 'district' || scenario == 'ips_type') {
+            $.ajax({
+                url: "{!! url('workflow/rule-value') !!}" + "/" + id,
+                type: "get",
+                data: {scenario: scenario},
+                headers: {
+                    'X-CSRF-Token': $('meta[name="_token"]').attr('content')
+                },
+                success: function(data) {
+                    $("#rulevalue" + id).html(data);
+                }
+            });
+        } else {
+            $("#rulevalue" + id).html('<input class="form-control" type="text" name="rule[' + id + '][c]" required>');
+        }
+    }
 
 </script>
 
