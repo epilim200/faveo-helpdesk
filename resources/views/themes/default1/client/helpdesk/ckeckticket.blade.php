@@ -146,23 +146,7 @@ $thread = App\Model\helpdesk\Ticket\Ticket_Thread::where('ticket_id', '=', \Cryp
                     <div class="alert alert-secondary">
                         <div class="row">
                             <div class="col-md-3">
-                                <?php
-                                $sla = $tickets->sla;
-                                $SlaPlan = App\Model\helpdesk\Manage\Sla_plan::where('id', '=', $sla)->first();
-                                ?>
-                                <b>{!! Lang::get('lang.sla_plan') !!}: {{$SlaPlan->grace_period}} </b>
-                            </div>
-                            <div class="col-md-3">
                                 <b>{!! Lang::get('lang.created_date') !!}: </b> {{ UTC::usertimezone($tickets->created_at) }}
-                            </div>
-                            <div class="col-md-3">
-                                <b>{!! Lang::get('lang.due_date') !!}: </b>
-                                <?php
-                                $time = $tickets->created_at;
-                                $time = date_create($time);
-                                date_add($time, date_interval_create_from_date_string($SlaPlan->grace_period));
-                                echo UTC::usertimezone(date_format($time, 'Y-m-d H:i:s'));
-                                ?>
                             </div>
                             <div class="col-md-3">
                                 <?php $response = App\Model\helpdesk\Ticket\Ticket_Thread::where('ticket_id', '=', $tickets->id)->where('is_internal', '=', 0)->get(); ?>
