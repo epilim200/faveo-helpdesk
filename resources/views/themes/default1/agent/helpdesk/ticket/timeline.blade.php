@@ -18,6 +18,8 @@ $user = App\User::where('id', '=', $tickets->user_id)->first();
 $assignedto = App\User::where('id', '=', $tickets->assigned_to)->first();
 $agent_group = Auth::user()->assign_group;
 $group = App\Model\helpdesk\Agent\Groups::where('id', '=', $agent_group)->where('group_status', '=', '1')->first();
+$is_own_dept = (Auth::user()->role == 'admin') || ($tickets->dept_id == Auth::user()->primary_dpt);
+$Collaborator = App\Model\helpdesk\Ticket\Ticket_Collaborator::where('ticket_id', '=', $tickets->id)->get();
 ?>
 
 @section('sidebar')
@@ -135,9 +137,10 @@ if ($thread->title != "") {
             <!-- <button type="button" class="btn btn-default"><i class="fa fa-edit" style="color:green;"> </i> Edit</button> -->
             <?php
             \Illuminate\Support\Facades\Event::dispatch(new \App\Events\TicketBoxHeader($user->id));
+            ?>
 
-            if ($group->can_edit_ticket == 1) {
-                ?>
+            @if($is_own_dept)
+            <?php if ($group->can_edit_ticket == 1) { ?>
             <button type="button" class="btn btn-sm btn-default btn-tool" data-toggle="modal" data-target="#Edit">
 
                 <i class="fas fa-edit" style="color:green;"></i> {{trans('lang.edit')}}
@@ -158,7 +161,7 @@ if ($thread->title != "") {
 
                 </button>
             @endif
-
+            @endif
 
             <?php \Illuminate\Support\Facades\Event::dispatch('show-add-event-btn', []); ?>
 
@@ -168,7 +171,9 @@ if ($thread->title != "") {
                 <i class="fas fa-print"></i> {{trans('lang.generate_pdf')}}
 
             </a>
-            @endif            <div class="btn-group">
+            @endif
+            @if($is_own_dept)
+            <div class="btn-group">
                 <button type="button" class="btn btn-sm btn-default dropdown-toggle" data-toggle="dropdown" id="d1"><i class="fas fa-exchange-alt" style="color:teal;" id="hidespin"> </i><i class="fa fa-spinner fa-spin" style="color:teal; display:none;" id="spin"></i>
                     {!! Lang::get('lang.change_status') !!} <span class="caret"></span>
                 </button>
@@ -217,6 +222,7 @@ if ($thread->title != "") {
                 </div>
             <?php }
             ?>
+            @endif
         </div>
        <?php
         $priority = App\Model\helpdesk\Ticket\Ticket_Priority::where('priority_id', '=', $tickets->priority_id)->first();
@@ -364,6 +370,7 @@ if ($thread->title != "") {
         </div>  <!-- added 05/05/2016-->
         <div id="resultdiv"></div>
 
+        @if($is_own_dept)
         <div class="card card-light" id="inboxactions">
             
             <div class="card-header">
@@ -545,6 +552,7 @@ if ($thread->title != "") {
                 <?php \Illuminate\Support\Facades\Event::dispatch('timeline.tab.content',[$tickets]); ?>
             </div>
         </div>
+        @endif
 
             <!-- ticket  conversations -->
             <?php

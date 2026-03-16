@@ -76,12 +76,48 @@ class DashboardController extends Controller
         }
         $return = '';
         $last = '';
+        // Filter mengikut department agent atau ticket_thread
+        $agentId = null;
+        $deptId = null;
+        if (Auth::user()->role == 'agent') {
+            $agentId = Auth::user()->id;
+            $deptId = Auth::user()->primary_dpt;
+        }
         for ($i = $date1; $i <= $date2; $i = $i + 86400) {
             $thisDate = date('Y-m-d', $i);
 
-            $created = \DB::table('tickets')->select('created_at')->where('created_at', 'LIKE', '%'.$thisDate.'%')->count();
-            $closed = \DB::table('tickets')->select('closed_at')->where('closed_at', 'LIKE', '%'.$thisDate.'%')->count();
-            $reopened = \DB::table('tickets')->select('reopened_at')->where('reopened_at', 'LIKE', '%'.$thisDate.'%')->count();
+            $createdQuery = \DB::table('tickets')->where('created_at', 'LIKE', '%'.$thisDate.'%');
+            $closedQuery = \DB::table('tickets')->where('closed_at', 'LIKE', '%'.$thisDate.'%');
+            $reopenedQuery = \DB::table('tickets')->where('reopened_at', 'LIKE', '%'.$thisDate.'%');
+            if ($deptId) {
+                $createdQuery->where(function ($q) use ($deptId, $agentId) {
+                    $q->where('dept_id', $deptId)
+                      ->orWhereExists(function ($sub) use ($agentId) {
+                          $sub->select(\DB::raw(1))->from('ticket_thread')
+                              ->whereColumn('ticket_thread.ticket_id', 'tickets.id')
+                              ->where('ticket_thread.user_id', $agentId);
+                      });
+                });
+                $closedQuery->where(function ($q) use ($deptId, $agentId) {
+                    $q->where('dept_id', $deptId)
+                      ->orWhereExists(function ($sub) use ($agentId) {
+                          $sub->select(\DB::raw(1))->from('ticket_thread')
+                              ->whereColumn('ticket_thread.ticket_id', 'tickets.id')
+                              ->where('ticket_thread.user_id', $agentId);
+                      });
+                });
+                $reopenedQuery->where(function ($q) use ($deptId, $agentId) {
+                    $q->where('dept_id', $deptId)
+                      ->orWhereExists(function ($sub) use ($agentId) {
+                          $sub->select(\DB::raw(1))->from('ticket_thread')
+                              ->whereColumn('ticket_thread.ticket_id', 'tickets.id')
+                              ->where('ticket_thread.user_id', $agentId);
+                      });
+                });
+            }
+            $created = $createdQuery->count();
+            $closed = $closedQuery->count();
+            $reopened = $reopenedQuery->count();
 
             $value = ['date' => $thisDate, 'open' => $created, 'closed' => $closed, 'reopened' => $reopened];
             $array = array_map('htmlentities', $value);

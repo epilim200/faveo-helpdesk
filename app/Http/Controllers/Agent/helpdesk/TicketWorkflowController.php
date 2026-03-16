@@ -241,6 +241,7 @@ class TicketWorkflowController extends Controller
      */
     public function checkRuleCondition($to_check, $condition, $statement)
     {
+        $return = false;
         if ($condition == 'equal') {
             $return = $this->checkEqual($statement, $to_check);
         } elseif ($condition == 'not_equal') {
@@ -255,11 +256,6 @@ class TicketWorkflowController extends Controller
             $return = $this->checkEnds($statement, $to_check);
         }
 
-//        elseif($condition == 'match') {
-//
-//        } elseif($condition == 'not_match') {
-//
-//        }
         return $return;
     }
 
