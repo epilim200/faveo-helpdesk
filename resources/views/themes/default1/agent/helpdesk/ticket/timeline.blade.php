@@ -1091,7 +1091,7 @@ if ($thread->title != "") {
                             </div>
                             <div id="assign_agent_section">
                                 <p>{!! Lang::get('lang.whome_do_you_want_to_assign_ticket') !!}?</p>
-                                <select id="asssign" class="form-control select2" name="assign_to" style="width: 100%;">
+                                <select id="asssign" class="form-control assign-select2" name="assign_to" style="width: 100%;">
                                     <option value="">-- Sila Pilih --</option>
                                     <optgroup label="Agents ( {!! $count_assign !!} )">
                                         @foreach($assign as $user)
@@ -1102,7 +1102,7 @@ if ($thread->title != "") {
                             </div>
                             <div id="assign_dept_section" style="display:none;">
                                 <p>{!! Lang::get('lang.select') !!} {!! Lang::get('lang.department') !!}</p>
-                                <select id="assign_dept" class="form-control select2" style="width: 100%;">
+                                <select id="assign_dept" class="form-control assign-select2" style="width: 100%;">
                                     <option value="">-- Sila Pilih --</option>
                                     @foreach($all_departments as $dept_id => $dept_name)
                                     <option value="dept_{{$dept_id}}">{{$dept_name}}</option>
@@ -1438,11 +1438,16 @@ if ($thread->title != "") {
 
     //Initialize Select2 Elements
     $(".select2").select2();
-    // Reinit Select2 dalam assign modal supaya dropdown render dengan betul
+    // Init Select2 dalam assign modal dengan dropdownParent supaya tidak ganggu backdrop
     var $assignModal = $("#assign{{$tickets->id}}");
+    var assignSelect2Init = false;
     $assignModal.on('shown.bs.modal', function () {
-        $("#asssign").select2({ dropdownParent: $(this) });
-        $("#assign_dept").select2({ dropdownParent: $(this) });
+        var modal = $(this);
+        if (!assignSelect2Init) {
+            $("#asssign").select2({ dropdownParent: modal, width: '100%' });
+            $("#assign_dept").select2({ dropdownParent: modal, width: '100%' });
+            assignSelect2Init = true;
+        }
     });
     // Toggle antara assign agent dan assign department
     $("input[name='assign_type']").on('change', function () {

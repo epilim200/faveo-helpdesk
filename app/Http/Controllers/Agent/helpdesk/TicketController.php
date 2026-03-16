@@ -1428,8 +1428,8 @@ class TicketController extends Controller
             } elseif ($assign_to[0] == 'dept') {
                 $dept_detail = Department::where('id', '=', $assign_to[1])->first();
                 $ticket->dept_id = $assign_to[1];
-                $ticket->assigned_to = 0;
-                $ticket->team_id = 0;
+                $ticket->assigned_to = null;
+                $ticket->team_id = null;
                 $ticket_number = $ticket->ticket_number;
                 $ticket->save();
                 $ticket_thread = Ticket_Thread::where('ticket_id', '=', $id)->first();
