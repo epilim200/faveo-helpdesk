@@ -1704,4 +1704,7 @@ return [
     'activated'                                            => 'Activated',
     'add-child'                                            => 'Add Child',
     'save-successful'                                      => ' Saved Successfully',
+    'apply_filter'                                         => 'Apply Filter',
+    'reset'                                                => 'Reset',
+    'filters'                                              => 'Filters',
 ];

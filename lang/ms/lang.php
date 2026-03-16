@@ -1686,4 +1686,7 @@ return [
     'activated'                                            => 'Activated',
     'add-child'                                            => 'Add Child',
     'save-successful'                                      => ' Saved Successfully',
+    'apply_filter'                                         => 'Tapis',
+    'reset'                                                => 'Set Semula',
+    'filters'                                              => 'Tapis',
 ];
