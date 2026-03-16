@@ -382,7 +382,13 @@ class ApiController extends Controller
                 $dept[] = $user->primary_dpt;
                 $unassigned = $unassigned->where(function ($query) use ($dept, $id) {
                     $query->whereIn('tickets.dept_id', $dept)
-                            ->orWhere('assigned_to', '=', $id);
+                            ->orWhere('assigned_to', '=', $id)
+                            ->orWhereExists(function ($sub) use ($id) {
+                                $sub->select(\DB::raw(1))
+                                    ->from('ticket_thread')
+                                    ->whereColumn('ticket_thread.ticket_id', 'tickets.id')
+                                    ->where('ticket_thread.user_id', '=', $id);
+                            });
                 });
             }
             $unassigned = $unassigned->select('ticket_priority.priority_color as priority_color', \DB::raw('substring_index(group_concat(ticket_thread.title order by ticket_thread.id asc) , ",", 1) as title'), 'tickets.duedate as overdue_date', \DB::raw('count(ticket_attachment.id) as attachment'), \DB::raw('max(ticket_thread.updated_at) as updated_at'), 'user_name', 'first_name', 'last_name', 'email', 'profile_pic', 'ticket_number', 'tickets.id', 'tickets.created_at', 'department.name as department_name', 'ticket_priority.priority as priotity_name', 'sla_plan.name as sla_plan_name', 'help_topic.topic as help_topic_name', 'ticket_status.name as ticket_status_name')
@@ -435,7 +441,13 @@ class ApiController extends Controller
                 $dept[] = $user->primary_dpt;
                 $result = $result->where(function ($query) use ($dept, $id) {
                     $query->whereIn('tickets.dept_id', $dept)
-                            ->orWhere('assigned_to', '=', $id);
+                            ->orWhere('assigned_to', '=', $id)
+                            ->orWhereExists(function ($sub) use ($id) {
+                                $sub->select(\DB::raw(1))
+                                    ->from('ticket_thread')
+                                    ->whereColumn('ticket_thread.ticket_id', 'tickets.id')
+                                    ->where('ticket_thread.user_id', '=', $id);
+                            });
                 });
             }
             $result = $result->select('tickets.duedate as overdue_date', 'ticket_priority.priority_color as priority_color', \DB::raw('substring_index(group_concat(ticket_thread.title order by ticket_thread.id asc) , ",", 1) as title'), \DB::raw('count(ticket_attachment.id) as attachment'), \DB::raw('max(ticket_thread.updated_at) as updated_at'), 'user_name', 'first_name', 'last_name', 'email', 'profile_pic', 'ticket_number', 'tickets.id', 'tickets.created_at', 'department.name as department_name', 'ticket_priority.priority as priotity_name', 'sla_plan.name as sla_plan_name', 'help_topic.topic as help_topic_name', 'ticket_status.name as ticket_status_name')
@@ -1524,7 +1536,16 @@ class ApiController extends Controller
             if ($user->role == 'agent') {
                 $id = $user->id;
                 $dept[] = $user->primary_dpt;
-                $tickets = $tickets->whereIn('tickets.dept_id', $dept)->orWhere('assigned_to', '=', $user->id);
+                $tickets = $tickets->where(function ($query) use ($dept, $id) {
+                    $query->whereIn('tickets.dept_id', $dept)
+                            ->orWhere('assigned_to', '=', $id)
+                            ->orWhereExists(function ($sub) use ($id) {
+                                $sub->select(\DB::raw(1))
+                                    ->from('ticket_thread')
+                                    ->whereColumn('ticket_thread.ticket_id', 'tickets.id')
+                                    ->where('ticket_thread.user_id', '=', $id);
+                            });
+                });
             }
             $department = $this->department->select('name', 'id')->get()->toArray();
             $sla = $this->slaPlan->select('name', 'id', 'grace_period as sla_duration')->get()->toArray();

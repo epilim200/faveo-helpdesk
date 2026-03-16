@@ -428,9 +428,15 @@ class FilterController extends Controller
         if (Auth::user()->role == 'agent') {
             $id = Auth::user()->id;
             $dept[] = Auth::user()->primary_dpt;
-            $table = $table->where(function ($query) use ($dept) {
+            $table = $table->where(function ($query) use ($dept, $id) {
                 $query->whereIn('tickets.dept_id', $dept)
-                        ->orWhere('assigned_to', '=', Auth::user()->id);
+                        ->orWhere('assigned_to', '=', $id)
+                        ->orWhereExists(function ($sub) use ($id) {
+                            $sub->select(\DB::raw(1))
+                                ->from('ticket_thread')
+                                ->whereColumn('ticket_thread.ticket_id', 'tickets.id')
+                                ->where('ticket_thread.user_id', '=', $id);
+                        });
             });
         }
 

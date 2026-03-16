@@ -212,9 +212,12 @@ class TicketController extends Controller
         if (Auth::user()->role == 'agent') {
             $dept = Department::where('id', '=', Auth::user()->primary_dpt)->first();
             $tickets = Tickets::where('id', '=', $id)->first();
+            $hasThread = Ticket_Thread::where('ticket_id', $id)->where('user_id', Auth::user()->id)->exists();
             if ($tickets->dept_id == $dept->id) {
                 $tickets = $tickets;
             } elseif ($tickets->assigned_to == Auth::user()->id) {
+                $tickets = $tickets;
+            } elseif ($hasThread) {
                 $tickets = $tickets;
             } else {
                 $tickets = null;
@@ -1251,9 +1254,6 @@ class TicketController extends Controller
         $current_dept = Department::where('id', '=', $ticket_status->dept_id)->first();
         if ($current_dept && $current_dept->resolve_dept_id) {
             $ticket_status->dept_id = $current_dept->resolve_dept_id;
-            if (Auth::user()->role != 'user') {
-                $ticket_status->assigned_to = Auth::user()->id;
-            }
             $ticket_status->save();
         }
         $ticket_status_message = Ticket_Status::where('id', '=', $ticket_status->status)->first();
@@ -1424,6 +1424,20 @@ class TicketController extends Controller
                 $thread->user_id = Auth::user()->id;
                 $thread->is_internal = 1;
                 $thread->body = 'This Ticket has been assigned to '.$assignee;
+                $thread->save();
+            } elseif ($assign_to[0] == 'dept') {
+                $dept_detail = Department::where('id', '=', $assign_to[1])->first();
+                $ticket->dept_id = $assign_to[1];
+                $ticket->assigned_to = 0;
+                $ticket->team_id = 0;
+                $ticket_number = $ticket->ticket_number;
+                $ticket->save();
+                $ticket_thread = Ticket_Thread::where('ticket_id', '=', $id)->first();
+                $thread = new Ticket_Thread();
+                $thread->ticket_id = $ticket->id;
+                $thread->user_id = Auth::user()->id;
+                $thread->is_internal = 1;
+                $thread->body = 'This Ticket has been assigned to department '.$dept_detail->name;
                 $thread->save();
             } elseif ($assign_to[0] == 'user') {
                 $ticket->assigned_to = $assign_to[1];
