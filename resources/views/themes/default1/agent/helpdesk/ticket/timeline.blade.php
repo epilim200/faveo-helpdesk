@@ -1078,22 +1078,35 @@ if ($thread->title != "") {
                             <img src="{{asset("lb-faveo/media/images/gifloader.gif")}}">
                         </div>
                         <div id="assign_body">
-                            <p>{!! Lang::get('lang.whome_do_you_want_to_assign_ticket') !!}?</p>
-                            <select id="asssign" class="form-control" name="assign_to">
-                                <?php
-                                $assign = App\User::where('role', '!=', 'user')->where('active', '=', '1')->orderBy('first_name')->get();
-                                $count_assign = count($assign);
-                                $teams = App\Model\helpdesk\Agent\Teams::where('status', '=', '1')->get();
-                                $count_teams = count($teams);
-                                $departments = App\Model\helpdesk\Agent\Department::pluck('name', 'id');
-                                ?>
-
-                                <optgroup label="Agents ( {!! $count_assign !!} )">
-                                    @foreach($assign as $user)
-                                    <option  value="user_{{$user->id}}">{{$user->first_name." ".$user->last_name}}{{ isset($departments[$user->primary_dpt]) ? ' ('.$departments[$user->primary_dpt].')' : '' }}</option>
+                            <?php
+                            $assign = App\User::where('role', '!=', 'user')->where('active', '=', '1')->orderBy('first_name')->get();
+                            $count_assign = count($assign);
+                            $all_departments = App\Model\helpdesk\Agent\Department::orderBy('name')->pluck('name', 'id');
+                            ?>
+                            <div class="form-group">
+                                <label><input type="radio" name="assign_type" value="agent" checked> {!! Lang::get('lang.agent') !!}</label>
+                                <label class="ml-3"><input type="radio" name="assign_type" value="dept"> {!! Lang::get('lang.department') !!}</label>
+                            </div>
+                            <div id="assign_agent_section">
+                                <p>{!! Lang::get('lang.whome_do_you_want_to_assign_ticket') !!}?</p>
+                                <select id="asssign" class="form-control select2" name="assign_to" style="width: 100%;">
+                                    <option value="">-- Sila Pilih --</option>
+                                    <optgroup label="Agents ( {!! $count_assign !!} )">
+                                        @foreach($assign as $user)
+                                        <option value="user_{{$user->id}}">{{$user->first_name." ".$user->last_name}}{{ isset($all_departments[$user->primary_dpt]) ? ' ('.$all_departments[$user->primary_dpt].')' : '' }}</option>
+                                        @endforeach
+                                    </optgroup>
+                                </select>
+                            </div>
+                            <div id="assign_dept_section" style="display:none;">
+                                <p>{!! Lang::get('lang.select') !!} {!! Lang::get('lang.department') !!}</p>
+                                <select id="assign_dept" class="form-control select2" style="width: 100%;">
+                                    <option value="">-- Sila Pilih --</option>
+                                    @foreach($all_departments as $dept_id => $dept_name)
+                                    <option value="dept_{{$dept_id}}">{{$dept_name}}</option>
                                     @endforeach
-                                </optgroup>
-                            </select>
+                                </select>
+                            </div>
                         </div>
                     </div>
                     <div class="modal-footer justify-content-between">
@@ -1423,6 +1436,26 @@ if ($thread->title != "") {
 
     //Initialize Select2 Elements
     $(".select2").select2();
+    // Reinit Select2 dalam assign modal supaya dropdown render dengan betul
+    var $assignModal = $("#assign{{$tickets->id}}");
+    $assignModal.on('shown.bs.modal', function () {
+        $("#asssign").select2({ dropdownParent: $(this) });
+        $("#assign_dept").select2({ dropdownParent: $(this) });
+    });
+    // Toggle antara assign agent dan assign department
+    $("input[name='assign_type']").on('change', function () {
+        if ($(this).val() === 'agent') {
+            $("#assign_agent_section").show();
+            $("#assign_dept_section").hide();
+            $("#asssign").attr('name', 'assign_to');
+            $("#assign_dept").removeAttr('name');
+        } else {
+            $("#assign_agent_section").hide();
+            $("#assign_dept_section").show();
+            $("#assign_dept").attr('name', 'assign_to');
+            $("#asssign").removeAttr('name');
+        }
+    });
             setInterval(function(){
             $("#auto-submit").submit(function(){
             $.ajax({
