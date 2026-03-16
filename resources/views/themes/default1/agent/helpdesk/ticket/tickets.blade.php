@@ -187,6 +187,9 @@ if (Request::has('assigned'))
 
         $sla_plans = \App\Model\helpdesk\Manage\Sla_plan::where('status', 1)->orderBy('name')->get();
         $help_topics = \App\Model\helpdesk\Manage\Help_topic::where('status', 1)->orderBy('topic')->get();
+        $states = \App\Model\helpdesk\Utility\State::orderBy('name')->get();
+        $districts = \App\Model\helpdesk\Utility\District::orderBy('name')->get();
+        $ips_types = \App\Model\helpdesk\Utility\IpsType::orderBy('sort')->get();
 
         // Get current filter values from request
         $current_filters = Request::all();
@@ -205,140 +208,80 @@ if (Request::has('assigned'))
                         <input type="hidden" name="show[]" value="{{ isset($current_filters['show']) ? $current_filters['show'][0] : 'inbox' }}">
 
                         <div class="row">
-                            <!-- Department Filter -->
+                            <!-- Row 1: Department, Status, Source, SLA -->
                             <div class="col-md-3 filter-row">
                                 <label>{{Lang::get('lang.department')}}</label>
-                                <select name="departments[]" id="departments-filter" class="form-control select2-filter" multiple>
+                                <select name="departments[]" id="departments-filter" class="form-control select2-filter">
+                                    <option value="">-- Sila Pilih --</option>
                                     @foreach($departments as $dept)
                                     <option value="{{ $dept->name }}" {{ (isset($current_filters['departments']) && in_array($dept->name, $current_filters['departments'])) ? 'selected' : '' }}>{{ $dept->name }}</option>
                                     @endforeach
                                 </select>
                             </div>
-
-                            <!-- Status Filter -->
                             <div class="col-md-3 filter-row">
                                 <label>{{Lang::get('lang.status')}}</label>
-                                <select name="status[]" id="status-filter" class="form-control select2-filter" multiple>
+                                <select name="status[]" id="status-filter" class="form-control select2-filter">
+                                    <option value="">-- Sila Pilih --</option>
                                     @foreach($statuses as $status)
                                     <option value="{{ $status->name }}" {{ (isset($current_filters['status']) && in_array($status->name, $current_filters['status'])) ? 'selected' : '' }}>{{ $status->name }}</option>
                                     @endforeach
                                 </select>
                             </div>
-
-                            <!-- Priority Filter -->
-                            <div class="col-md-3 filter-row">
-                                <label>{{Lang::get('lang.priority')}}</label>
-                                <select name="priority[]" id="priority-filter" class="form-control select2-filter" multiple>
-                                    @foreach($priorities as $priority)
-                                    <option value="{{ $priority->priority }}" {{ (isset($current_filters['priority']) && in_array($priority->priority, $current_filters['priority'])) ? 'selected' : '' }}>{{ $priority->priority }}</option>
-                                    @endforeach
-                                </select>
-                            </div>
-
-                            <!-- Source Filter -->
                             <div class="col-md-3 filter-row">
                                 <label>{{Lang::get('lang.source')}}</label>
-                                <select name="source[]" id="source-filter" class="form-control select2-filter" multiple>
+                                <select name="source[]" id="source-filter" class="form-control select2-filter">
+                                    <option value="">-- Sila Pilih --</option>
                                     @foreach($sources as $source)
                                     <option value="{{ $source->name }}" {{ (isset($current_filters['source']) && in_array($source->name, $current_filters['source'])) ? 'selected' : '' }}>{{ $source->name }}</option>
                                     @endforeach
                                 </select>
                             </div>
-                        </div>
-
-                        <div class="row mt-2">
-                            <!-- Assigned To Filter -->
-                            <div class="col-md-3 filter-row">
-                                <label>{{Lang::get('lang.assigned_to')}}</label>
-                                <select name="assigned-to[]" id="assigned-to-filter" class="form-control select2-filter" multiple>
-                                    @foreach($agents as $agent)
-                                    <option value="{{ $agent->first_name }} {{ $agent->last_name }}" {{ (isset($current_filters['assigned-to']) && in_array($agent->first_name.' '.$agent->last_name, $current_filters['assigned-to'])) ? 'selected' : '' }}>{{ $agent->first_name }} {{ $agent->last_name }}</option>
-                                    @endforeach
-                                </select>
-                            </div>
-
-                            <!-- SLA Filter -->
                             <div class="col-md-3 filter-row">
                                 <label>{{Lang::get('lang.sla_plan')}}</label>
-                                <select name="sla[]" id="sla-filter" class="form-control select2-filter" multiple>
+                                <select name="sla[]" id="sla-filter" class="form-control select2-filter">
+                                    <option value="">-- Sila Pilih --</option>
                                     @foreach($sla_plans as $sla)
                                     <option value="{{ $sla->name }}" {{ (isset($current_filters['sla']) && in_array($sla->name, $current_filters['sla'])) ? 'selected' : '' }}>{{ $sla->name }}</option>
                                     @endforeach
                                 </select>
                             </div>
-
-                            <!-- Help Topic Filter -->
+                        </div>
+                        <div class="row mt-2">
+                            <!-- Row 2: Help Topic, Labels, Negeri, Daerah -->
                             <div class="col-md-3 filter-row">
                                 <label>{{Lang::get('lang.help_topic')}}</label>
-                                <select name="help-topic[]" id="help-topic-filter" class="form-control select2-filter" multiple>
+                                <select name="help-topic[]" id="help-topic-filter" class="form-control select2-filter">
+                                    <option value="">-- Sila Pilih --</option>
                                     @foreach($help_topics as $topic)
                                     <option value="{{ $topic->topic }}" {{ (isset($current_filters['help-topic']) && in_array($topic->topic, $current_filters['help-topic'])) ? 'selected' : '' }}>{{ $topic->topic }}</option>
                                     @endforeach
                                 </select>
                             </div>
-
-                            <!-- Labels Filter (only if labels exist) -->
-                            @if($labels->count() > 0)
                             <div class="col-md-3 filter-row">
-                                <label>{{Lang::get('lang.labels')}}</label>
-                                <select name="labels[]" id="labels-filter" class="form-control select2-filter" multiple>
-                                    @foreach($labels as $label)
-                                    <option value="{{ $label->title }}" {{ (isset($current_filters['labels']) && in_array($label->title, $current_filters['labels'])) ? 'selected' : '' }}>{{ $label->title }}</option>
+                                <label>Negeri</label>
+                                <select name="state[]" id="state-filter" class="form-control select2-filter">
+                                    <option value="">-- Sila Pilih --</option>
+                                    @foreach($states as $st)
+                                    <option value="{{ $st->name }}" {{ (isset($current_filters['state']) && in_array($st->name, $current_filters['state'])) ? 'selected' : '' }}>{{ $st->name }}</option>
                                     @endforeach
                                 </select>
                             </div>
-                            @endif
-                        </div>
-
-                        <div class="row mt-2">
-                            <!-- Created Date Filter -->
                             <div class="col-md-3 filter-row">
-                                <label>{{Lang::get('lang.created')}}</label>
-                                <select name="created[]" id="created-filter" class="form-control select2-filter">
-                                    <option value="">-- {{Lang::get('lang.any-time')}} --</option>
-                                    <option value="today" {{ (isset($current_filters['created']) && in_array('today', $current_filters['created'])) ? 'selected' : '' }}>{{Lang::get('lang.today')}}</option>
-                                    <option value="yesterday" {{ (isset($current_filters['created']) && in_array('yesterday', $current_filters['created'])) ? 'selected' : '' }}>{{Lang::get('lang.yesterday')}}</option>
-                                    <option value="this-week" {{ (isset($current_filters['created']) && in_array('this-week', $current_filters['created'])) ? 'selected' : '' }}>{{Lang::get('lang.this-week')}}</option>
-                                    <option value="last-week" {{ (isset($current_filters['created']) && in_array('last-week', $current_filters['created'])) ? 'selected' : '' }}>{{Lang::get('lang.last-week')}}</option>
-                                    <option value="this-month" {{ (isset($current_filters['created']) && in_array('this-month', $current_filters['created'])) ? 'selected' : '' }}>{{Lang::get('lang.this-month')}}</option>
-                                    <option value="last-month" {{ (isset($current_filters['created']) && in_array('last-month', $current_filters['created'])) ? 'selected' : '' }}>{{Lang::get('lang.last-month')}}</option>
-                                    <option value="last-3-months" {{ (isset($current_filters['created']) && in_array('last-3-months', $current_filters['created'])) ? 'selected' : '' }}>{{Lang::get('lang.last-3-months')}}</option>
-                                    <option value="last-6-months" {{ (isset($current_filters['created']) && in_array('last-6-months', $current_filters['created'])) ? 'selected' : '' }}>{{Lang::get('lang.last-6-months')}}</option>
-                                    <option value="last-year" {{ (isset($current_filters['created']) && in_array('last-year', $current_filters['created'])) ? 'selected' : '' }}>{{Lang::get('lang.last-year')}}</option>
+                                <label>Daerah</label>
+                                <select name="district[]" id="district-filter" class="form-control select2-filter">
+                                    <option value="">-- Sila Pilih --</option>
+                                    @foreach($districts as $dist)
+                                    <option value="{{ $dist->name }}" {{ (isset($current_filters['district']) && in_array($dist->name, $current_filters['district'])) ? 'selected' : '' }}>{{ $dist->name }}</option>
+                                    @endforeach
                                 </select>
                             </div>
-
-                            <!-- Updated Date Filter -->
                             <div class="col-md-3 filter-row">
-                                <label>{{Lang::get('lang.updated')}}</label>
-                                <select name="updated[]" id="updated-filter" class="form-control select2-filter">
-                                    <option value="">-- {{Lang::get('lang.any-time')}} --</option>
-                                    <option value="today" {{ (isset($current_filters['updated']) && in_array('today', $current_filters['updated'])) ? 'selected' : '' }}>{{Lang::get('lang.today')}}</option>
-                                    <option value="yesterday" {{ (isset($current_filters['updated']) && in_array('yesterday', $current_filters['updated'])) ? 'selected' : '' }}>{{Lang::get('lang.yesterday')}}</option>
-                                    <option value="this-week" {{ (isset($current_filters['updated']) && in_array('this-week', $current_filters['updated'])) ? 'selected' : '' }}>{{Lang::get('lang.this-week')}}</option>
-                                    <option value="last-week" {{ (isset($current_filters['updated']) && in_array('last-week', $current_filters['updated'])) ? 'selected' : '' }}>{{Lang::get('lang.last-week')}}</option>
-                                    <option value="this-month" {{ (isset($current_filters['updated']) && in_array('this-month', $current_filters['updated'])) ? 'selected' : '' }}>{{Lang::get('lang.this-month')}}</option>
-                                    <option value="last-month" {{ (isset($current_filters['updated']) && in_array('last-month', $current_filters['updated'])) ? 'selected' : '' }}>{{Lang::get('lang.last-month')}}</option>
-                                </select>
-                            </div>
-
-                            <!-- Assigned Status Filter -->
-                            <div class="col-md-3 filter-row">
-                                <label>{{Lang::get('lang.assigned')}}</label>
-                                <select name="assigned[]" id="assigned-filter" class="form-control select2-filter">
-                                    <option value="">-- {{Lang::get('lang.all')}} --</option>
-                                    <option value="1" {{ (isset($current_filters['assigned']) && in_array('1', $current_filters['assigned'])) ? 'selected' : '' }}>{{Lang::get('lang.assigned')}}</option>
-                                    <option value="0" {{ (isset($current_filters['assigned']) && in_array('0', $current_filters['assigned'])) ? 'selected' : '' }}>{{Lang::get('lang.unassigned')}}</option>
-                                </select>
-                            </div>
-
-                            <!-- Last Response By Filter -->
-                            <div class="col-md-3 filter-row">
-                                <label>{{Lang::get('lang.last_response')}}</label>
-                                <select name="last-response-by[]" id="response-filter" class="form-control select2-filter">
-                                    <option value="">-- {{Lang::get('lang.all')}} --</option>
-                                    <option value="Agent" {{ (isset($current_filters['last-response-by']) && in_array('Agent', $current_filters['last-response-by'])) ? 'selected' : '' }}>{{Lang::get('lang.agent')}}</option>
-                                    <option value="Client" {{ (isset($current_filters['last-response-by']) && in_array('Client', $current_filters['last-response-by'])) ? 'selected' : '' }}>{{Lang::get('lang.client')}}</option>
+                                <label>Jenis IPS</label>
+                                <select name="ips-type[]" id="ips-type-filter" class="form-control select2-filter">
+                                    <option value="">-- Sila Pilih --</option>
+                                    @foreach($ips_types as $ips)
+                                    <option value="{{ $ips->name }}" {{ (isset($current_filters['ips-type']) && in_array($ips->name, $current_filters['ips-type'])) ? 'selected' : '' }}>{{ $ips->name }}</option>
+                                    @endforeach
                                 </select>
                             </div>
                         </div>

@@ -137,7 +137,10 @@ class FilterController extends Controller
                             'ticket_source.name as source',
                             'tickets.status as ticket_status',
                             \DB::raw('MAX(ticket_status.name) as status_name'),
-                            'tickets.closed_at'
+                            'tickets.closed_at',
+                            'tickets.state',
+                            'tickets.district',
+                            'tickets.ips_type'
                         )->groupby('tickets.id');
 
         return $tickets;
@@ -171,6 +174,9 @@ class FilterController extends Controller
             'last-response-by',
             'ticket-number',
             'help-topic',
+            'state',
+            'district',
+            'ips-type',
         ];
         $mytickets = false;
         if ($inputs['show'][0] == 'mytickets') {
@@ -353,6 +359,15 @@ class FilterController extends Controller
                 $table = $this->filterByHelpTopic($value, $table);
 
                 return $table;
+                break;
+            case 'state':
+                return $table->whereIn('tickets.state', $value);
+                break;
+            case 'district':
+                return $table->whereIn('tickets.district', $value);
+                break;
+            case 'ips-type':
+                return $table->whereIn('tickets.ips_type', $value);
                 break;
             default:
                 break;

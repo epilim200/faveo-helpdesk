@@ -2768,6 +2768,9 @@ class TicketController extends Controller
                 Lang::get('lang.ticket_id'),
                 Lang::get('lang.from'),
                 Lang::get('lang.assigned_to'),
+                'Negeri',
+                'Daerah',
+                'Jenis IPS',
                 Lang::get('lang.last_activity')
             )->noScript();
     }
@@ -2908,6 +2911,15 @@ class TicketController extends Controller
                                 }
                             }
                         })
+                        ->editColumn('state', function ($tickets) {
+                            return $tickets->state ?: '-';
+                        })
+                        ->editColumn('district', function ($tickets) {
+                            return $tickets->district ?: '-';
+                        })
+                        ->editColumn('ips_type', function ($tickets) {
+                            return $tickets->ips_type ?: '-';
+                        })
                         ->editColumn('updated_at', function ($tickets) {
                             $TicketDatarow = $tickets->updated_at;
                             $updated = '--';
@@ -2917,7 +2929,7 @@ class TicketController extends Controller
 
                             return '<span style="display:none">'.$updated.'</span>'.UTC::usertimezone($updated);
                         })
-                        ->rawColumns(['id', 'title', 'ticket_number', 'c_uname', 'a_uname', 'updated_at'])
+                        ->rawColumns(['id', 'title', 'ticket_number', 'c_uname', 'a_uname', 'state', 'district', 'ips_type', 'updated_at'])
                         ->make();
     }
 
