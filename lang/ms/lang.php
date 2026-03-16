@@ -1689,4 +1689,5 @@ return [
     'apply_filter'                                         => 'Tapis',
     'reset'                                                => 'Set Semula',
     'filters'                                              => 'Tapis',
+    'can_print_ticket'                                     => 'Boleh cetak tiket',
 ];

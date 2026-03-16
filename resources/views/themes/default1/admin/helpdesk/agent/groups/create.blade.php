@@ -117,6 +117,11 @@ class="nav-link active"
                     {!! Form::checkbox('can_ban_email',1,null,['class' => 'checkbox']) !!}
                     &nbsp;{!! Form::label('can_ban_email',Lang::get('lang.can_ban_emails'),['style' => 'line-height:1;']) !!}
                 </div>
+                <!-- can print ticket -->
+                <div class="row">
+                    {!! Form::checkbox('can_print_ticket',1,null,['class' => 'checkbox']) !!}
+                    &nbsp;{!! Form::label('can_print_ticket',Lang::get('lang.can_print_ticket'),['style' => 'line-height:1;']) !!}
+                </div>
             </div>
         </div>
     </div>

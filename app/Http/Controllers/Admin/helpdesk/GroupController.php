@@ -153,6 +153,9 @@ class GroupController extends Controller
         //Updating can_ban_email field
         $banEmail = $request->input('can_ban_email');
         $var->can_ban_email = $banEmail;
+        //Updating can_print_ticket field
+        $printTicket = $request->input('can_print_ticket');
+        $var->can_print_ticket = $printTicket;
         //Updating can_manage_canned field
         $manageCanned = $request->input('can_manage_canned');
         $var->can_manage_canned = $manageCanned;

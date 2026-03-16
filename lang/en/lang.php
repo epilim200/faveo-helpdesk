@@ -1707,4 +1707,5 @@ return [
     'apply_filter'                                         => 'Apply Filter',
     'reset'                                                => 'Reset',
     'filters'                                              => 'Filters',
+    'can_print_ticket'                                     => 'Can print ticket',
 ];

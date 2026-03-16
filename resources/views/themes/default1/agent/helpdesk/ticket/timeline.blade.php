@@ -162,11 +162,13 @@ if ($thread->title != "") {
 
             <?php \Illuminate\Support\Facades\Event::dispatch('show-add-event-btn', []); ?>
 
+            @if($group->can_print_ticket == 1)
             <a href="{{url('ticket/print/'.$tickets->id)}}" target="_blank" class="btn btn-default btn-tool btn-sm">
 
                 <i class="fas fa-print"></i> {{trans('lang.generate_pdf')}}
 
-            </a>            <div class="btn-group">
+            </a>
+            @endif            <div class="btn-group">
                 <button type="button" class="btn btn-sm btn-default dropdown-toggle" data-toggle="dropdown" id="d1"><i class="fas fa-exchange-alt" style="color:teal;" id="hidespin"> </i><i class="fa fa-spinner fa-spin" style="color:teal; display:none;" id="spin"></i>
                     {!! Lang::get('lang.change_status') !!} <span class="caret"></span>
                 </button>
